@@ -1,0 +1,22 @@
+.MPD_playlist{
+    height:0;
+}
+
+.LIST_load_playlist.MPD_button{
+    background-image:  url(../img/plus.svg);
+    background-position: left center;
+    padding-left: 2.5em;
+    margin-left:1em;
+}
+
+.LIST_delete_playlist.MPD_button{
+    background-image:  url(../img/trash.svg);
+    background-position: left center;
+    padding-left: 20px;
+    margin-left:1em;
+}
+
+.MPD_playlist_list{
+    width:100%;
+    margin-bottom: 10px;
+}

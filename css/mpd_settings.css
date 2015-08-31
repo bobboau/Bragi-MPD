@@ -1,0 +1,16 @@
+/************\
+|* settings *|
+\************/
+
+.MPD_setting{
+    margin-left:2em;
+    font-size: :2em;
+}
+
+.MPD_setting input{
+    margin: 2em;
+}
+
+.MPD_setting th{
+    text-align: right;
+}

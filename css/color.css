@@ -1,0 +1,98 @@
+
+/*
+colors
+1 #7BA777
+2 #C5D1C3
+3 #9FBA9C
+4 #5A9953
+5 #38912F
+*/
+
+
+.UI_main .TAB_body{
+    background-color: #C5D1C3;
+}
+
+.UI_main .TAB_control{
+    background-color: #C5D1C3;
+}
+
+.UI_main .TAB_button{
+    border-color: #5A9953;
+    border-bottom-color: #C5D1C3;
+}
+
+.UI_main .TAB_button.TAB_selected{
+    background-color: #9FBA9C;
+    border-top-color: #9FBA9C;
+    border-bottom-color: #5A9953;
+}
+
+.UI_main .TAB_button.TAB_selected:first-child{
+    border-left-color: #9FBA9C;
+}
+
+.UI_main .TAB_button.TAB_selected:last-child{
+    border-right-color: #9FBA9C;
+}
+
+.UI_main .TAB_page{
+    border-top-color: #5A9953;
+    background-color: #9FBA9C;
+}
+
+/*********\
+|* SONGS *|
+\*********/
+
+.LIST_song{
+    border-color: #38912F;
+    border-image-slice: 1;
+    background: linear-gradient(135deg, #7BA777 0%, #9FBA9C 120%);
+}
+
+.LIST_song.selected{
+    background: linear-gradient(45deg, #7BA777 100%, #9FBA9C 50%);
+    border-color:black;
+}
+
+.LIST_song .LIST_song_artist::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_album::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_duration::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_genre::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_disk::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_track::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_path::before{
+    color: #C5D1C3;
+}
+
+.LIST_song .LIST_song_title{
+    color: #006600;
+}
+
+/*********\
+|* files *|
+\*********/
+
+.LIST_directory.expanded {
+    background-image: linear-gradient(90deg, #7BA777 0%, #9FBA9C 95%);
+    border-color: #38912F;
+}

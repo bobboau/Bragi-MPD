@@ -1,0 +1,75 @@
+.MPD_search table{
+    border-bottom-style: solid;
+    margin-bottom: 1em;
+    margin-top: 0.5em;
+}
+
+.MPD_search form{
+    border-bottom-style: solid;
+}
+
+.MPD_search form > div{
+    margin-top:1em;
+}
+
+.MPD_search{
+    overflow-y: auto;
+    height: 0;
+}
+
+.SEARCH_remove.MPD_button{
+    background-image:  url(../img/x.svg);
+    background-position: left center;
+    padding-left: 1.5em;
+    margin-bottom: 1em;
+}
+
+.SEARCH_add_criteria.MPD_button{
+    background-image:  url(../img/plus.svg);
+    background-position: left center;
+    padding-left: 1.5em;
+    margin-left: 1em;
+}
+
+.SEARCH_clear_criteria.MPD_button{
+    background-image:  url(../img/trash.svg);
+    background-position: left center;
+    padding-left: 1.5em;
+    margin-left: 1em;
+}
+
+.SEARCH_do_search.MPD_button{
+    background-image:  url(../img/magnifying-glass.svg);
+    background-position: left center;
+    padding-left: 1.5em;
+    margin-left: 1em;
+}
+
+
+.SEARCH_append_to_queue.MPD_button{
+    background-image:  url(../img/plus.svg);
+    background-position: left center;
+    padding-left: 1.5em;
+    margin-left: 1em;
+}
+
+.SEARCH_append_to_playlist.MPD_button{
+    background-image:  url(../img/list.svg);
+    background-position: left center;
+    padding-left: 1.5em;
+    margin-left: 1em;
+}
+
+.MPD_search .LIST_song_add{
+    width: 1em;
+    display: inline-block;
+    margin: 0 0 0 1em;
+    background-image:  url(../img/plus.svg);
+}
+
+.MPD_search .LIST_song_add_playlist{
+    width: 1em;
+    display: inline-block;
+    margin: 0 0 0 1em;
+    background-image:  url(../img/list.svg);
+}

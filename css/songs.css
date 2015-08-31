@@ -1,0 +1,71 @@
+/*********\
+|* SONGS *|
+\*********/
+
+.LIST_contents{
+    padding-left: 5px;
+}
+
+.LIST_song{
+    padding:5px;
+    list-style-type: none;
+    border-style: solid;
+    margin: 10px;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.LIST_song.selected{
+    border-width: 4px;
+}
+
+.LIST_song .LIST_song_artist::before{
+    content: "By: ";
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_album::before{
+    content: "From: ";
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_duration::before{
+    content: "Duration: ";
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_genre::before{
+    content: "Genre: ";
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_disk::before{
+    content: "Disk: ";
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_track::before{
+    content: "Track: ";
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_path{
+    font-size: 0.75em;
+}
+
+.LIST_song .LIST_song_path::before{
+    content: "File: ";
+    font-size: 0.6em;
+}
+
+.LIST_song .LIST_song_title{
+    font-size: 1.5em;
+}
+
+.LIST_song_minor_information{
+    flex-grow: 0;
+}
+
+.LIST_song_property{
+    margin-left: 10px;
+}

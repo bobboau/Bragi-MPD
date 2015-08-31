@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MPD Client</title>
+    <link rel='shortcut icon' href='favicon.ico' type='image/x-icon'/>
+
+    <link rel="stylesheet" href="css/tab.css"/>
+    <link rel="stylesheet" href="css/list.css"/>
+    <link rel="stylesheet" href="css/mpd_controller.css"/>
+    <link rel="stylesheet" href="css/mpd_queue.css"/>
+    <link rel="stylesheet" href="css/mpd_playlist.css"/>
+    <link rel="stylesheet" href="css/mpd_files.css"/>
+    <link rel="stylesheet" href="css/mpd_settings.css"/>
+    <link rel="stylesheet" href="css/mpd_search.css"/>
+    <link rel="stylesheet" href="css/songs.css"/>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="stylesheet" href="css/color.css"/>
+
+    <!-- websocket adapter library -->
+    <script src="js/websock/base64.js"></script>
+    <script src="js/websock/util.js"></script>
+    <script src="js/websock/websock.js"></script>
+
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script src="js/mpd.js"></script>
+    <script src="js/tab.js"></script>
+    <script src="js/list.js"></script>
+    <script src="js/UI.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+    <meta name="mobile-web-app-capable" content="yes">
+
+<!--
+template for a song on the queue
+-->
+    <template id="template_LIST_queue_song">
+        <li class="LIST_item LIST_song hbox" data-mpd_queue_song_id="">
+            <span class="LIST_song_important_information">
+                <div>
+                    <span class="LIST_song_toolbar MPD_toolbar hbox">
+                        <span class="LIST_song_property LIST_song_title colapse" onclick="UI.playQueueSong(this)"></span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.playQueueSong(this)">&nbsp;</span>
+                        <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeQueueSong(this)">&nbsp;</span>
+                        <span/>
+                    </span>
+                </div>
+                <div class="LIST_song_property LIST_song_artist"></div>
+                <div class="LIST_song_property LIST_song_album"></div>
+            </span>
+            <span class="desktop_only LIST_song_minor_information">
+                <span class="hbox">
+                    <span></span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_duration"></div>
+                        <div class="LIST_song_property LIST_song_genre"></div>
+                    </span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_disk"></div>
+                        <div class="LIST_song_property LIST_song_track"></div>
+                    </span>
+                </span>
+                <div class="LIST_song_property LIST_song_path"></div>
+            </span>
+        </li>
+    </template>
+
+<!--
+template for a song on a playlist
+-->
+    <template id="template_LIST_playlist_song">
+        <li class="LIST_item LIST_song vbox">
+            <span class="LIST_song_important_information">
+                <div>
+                    <span class="LIST_song_toolbar MPD_toolbar hbox">
+                        <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
+                        <span/>
+                    </span>
+                </div>
+                <div class="LIST_song_property LIST_song_artist"></div>
+                <div class="LIST_song_property LIST_song_album"></div>
+            </span>
+            <span class="desktop_only LIST_song_minor_information">
+                <span class="hbox">
+                    <span></span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_duration"></div>
+                        <div class="LIST_song_property LIST_song_genre"></div>
+                    </span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_disk"></div>
+                        <div class="LIST_song_property LIST_song_track"></div>
+                    </span>
+                </span>
+                <div class="LIST_song_property LIST_song_path"></div>
+            </span>
+        </li>
+    </template>
+
+<!--
+template for a song file
+-->
+    <template id="template_LIST_file_song">
+        <li class="LIST_item LIST_song vbox">
+            <span class="LIST_song_important_information">
+                <div>
+                    <span class="LIST_song_toolbar MPD_toolbar hbox">
+                        <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
+                        <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)">&nbsp;</span>
+                        <span/>
+                    </span>
+                </div>
+                <div class="LIST_song_property LIST_song_artist"></div>
+                <div class="LIST_song_property LIST_song_album"></div>
+            </span>
+            <span class="desktop_only LIST_song_minor_information">
+                <span class="hbox">
+                    <span></span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_duration"></div>
+                        <div class="LIST_song_property LIST_song_genre"></div>
+                    </span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_disk"></div>
+                        <div class="LIST_song_property LIST_song_track"></div>
+                    </span>
+                </span>
+                <div class="LIST_song_property LIST_song_path"></div>
+            </span>
+        </li>
+    </template>
+
+<!--
+template for a song search
+-->
+    <template id="template_LIST_search_song">
+        <li class="LIST_item LIST_song vbox">
+            <span class="LIST_song_important_information">
+                <div>
+                    <span class="LIST_song_toolbar MPD_toolbar hbox">
+                        <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
+                        <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)">&nbsp;</span>
+                        <span/>
+                    </span>
+                </div>
+                <div class="LIST_song_property LIST_song_artist"></div>
+                <div class="LIST_song_property LIST_song_album"></div>
+            </span>
+        </li>
+    </template>
+
+<!--
+generic template for any song on any list
+-->
+    <template id="template_LIST_song">
+        <li class="LIST_item LIST_song vbox">
+            <span class="LIST_song_important_information">
+                <div>
+                    <span class="LIST_song_toolbar MPD_toolbar hbox">
+                        <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span/>
+                    </span>
+                </div>
+                <div class="LIST_song_property LIST_song_artist"></div>
+                <div class="LIST_song_property LIST_song_album"></div>
+            </span>
+            <span class="desktop_only LIST_song_minor_information">
+                <span class="hbox">
+                    <span></span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_duration"></div>
+                        <div class="LIST_song_property LIST_song_genre"></div>
+                    </span>
+                    <span class="colapse">
+                        <div class="LIST_song_property LIST_song_disk"></div>
+                        <div class="LIST_song_property LIST_song_track"></div>
+                    </span>
+                </span>
+                <div class="LIST_song_property LIST_song_path"></div>
+            </span>
+        </li>
+    </template>
+
+<!--
+template for a file directory
+-->
+    <template id="template_LIST_directory">
+        <li class="LIST_item LIST_directory MPD_button" data-mpd_file_path="" onclick="UI.fileListClick(this);event.stopPropagation();">
+            <div>
+                <span class="LIST_directory_path"></span>
+                <span class="LIST_song_add MPD_button colapse" onclick="UI.addDirectoryToQueue(this);event.stopPropagation();">&nbsp;</span>
+            </div>
+            <ul class="MPD_directory_children" onclick="event.stopPropagation();"></ul>
+        </li>
+    </template>
+
+<!--
+template for lists
+-->
+    <template id="template_LIST">
+        <div class="LIST_container vbox">
+            <div class="LIST_header"></div>
+            <div class="LIST_content_container">
+                <ul class="LIST_contents"></ul>
+            </div>
+            <div class="LIST_empty"></div>
+        </div>
+    </template>
+
+<!--
+template for search criteria
+-->
+    <template id="template_SEARCH_criteria">
+        <tr>
+            <th><select class="SEARCH_criteria_type" onchange="UI.updateSearchEditor(this);" /></th>
+            <td><input class="SEARCH_criteria_value" onchange="UI.onSearchCriteriaValueChange(this);" /></td>
+            <td><div class="MPD_button SEARCH_remove" onclick="UI.removeSearchCriteria(this);">Remove</div></td>
+        </tr>
+    </template>
+
+</head>
+<body>
+    <div class="TAB_container UI_main">
+        <div class="TAB_body">
+<!--
+< MAIN CONTROL
+< play/pause/seek/volume it's all right here
+-->
+            <div class="MPD_controller hbox">
+                <div class="MPD_play MPD_button" onclick="UI.play();"></div>
+                <div class="MPD_pause MPD_button" onclick="UI.pause();"></div>
+                <div class="MPD_controller_middle_controls vbox">
+                    <div class="MPD_controller_track_info hbox">
+                        <div class="MPD_controller_current_song_title marque_overflow"></div>
+                        <div class="MPD_controller_playing_info vbov">
+                            <div>
+                                <span class="MPD_controller_current_song_time"></span>
+                                /
+                                <span class="MPD_controller_current_song_duration"></span>
+                            </div>
+                        </div>
+
+                        <div class="MPD_controller_extra_info vbox">
+                            <div class="MPD_controller_current_song_artist marque_overflow"></div>
+                            <div class="MPD_controller_current_song_album marque_overflow"></div>
+                        </div>
+
+                    <!--
+                        <div class="MPD_controller_middle_upper_controls">
+                        </div>
+                -->
+                    </div>
+                    <div class="hbox">
+                        <div class="MPD_prev MPD_button" onclick="UI.previous();"></div>
+                        <input class="MPD_seek" type="range" min="0" oninput="UI.seek(this);" ></input>
+                        <div class="MPD_next MPD_button" onclick="UI.next();"></div>
+                    </div>
+                </div>
+                <div class="MPD_controller_volume_container hbox">
+                    <div class="MPD_controller_volume_icons vbox">
+                        <img class="MPD_icon" src="img/volume-high.svg"/>
+                        <img class="MPD_icon" src="img/volume-low.svg"/>
+                    </div>
+                    <input class="MPD_volume" orient="vertical" type="range" min="0" max="1" step="0.0000001"  onchange="UI.setVolume(this);"></input>
+                </div>
+            </div>
+
+<!--
+< QUEUE
+< list of currently playing songs
+-->
+            <div class="TAB_page TAB_default vbox" data-tab_page="queue">
+                <div class="MPD_queue LIST">
+                    <ul class="LIST_header LIST_song_toolbar MPD_toolbar">
+                        <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">|Clear Queue</li>
+                        <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">|Save Queue</li>
+                    </ul>
+                    <div class="LIST_empty">
+                        The Queue is empty!
+                    </div>
+                </div>
+            </div>
+
+<!--
+< PLAYLISTS
+< list of saved lists of songs
+-->
+            <div class="TAB_page vbox" data-tab_page="playlists">
+                <div class="MPD_playlist LIST">
+                    <ul class="LIST_header LIST_playlist_toolbar MPD_toolbar">
+                        <li><select class="MPD_playlist_list" onchange="UI.selectPlaylist(this);"></select></li><br/>
+                        <li class="LIST_load_playlist MPD_button" onclick="UI.loadPlaylist(this);">|Load Into Queue</li>
+                        <li class="LIST_delete_playlist MPD_button" onclick="UI.deletePlaylist(this);">|Delete Playlist</li>
+                    </ul>
+                    <div class="LIST_empty">
+                        <!--No songs in this playlist!-->
+                    </div>
+                </div>
+            </div>
+            <div class="TAB_page vbox" data-tab_page="files">
+                <div class="MPD_files">
+                    <ul>
+                        <li class="MPD_file_placeholder"></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="TAB_page vbox" data-tab_page="search">
+                <div class="MPD_search">
+                    <form>
+                        <table class="SEARCH_criteria"></table>
+                        <div>
+                            <span class="MPD_button SEARCH_add_criteria" onclick="UI.addSearchCriteria(this);">Add Criteria</span>
+                            <span class="MPD_button SEARCH_clear_criteria" onclick="UI.resetSearch(this);">Clear Criteria</span>
+                        </div>
+                        <div>
+                            <span class="MPD_button SEARCH_do_search" onclick="UI.doSearch(this);">Search</span>
+                            <span class="MPD_button SEARCH_append_to_queue" onclick="UI.appendSearchResultsToQueue(this);">to Queue</span>
+                            <span class="MPD_button SEARCH_append_to_playlist" onclick="UI.appendSearchResultsToPlaylist(this);">to Playlist</span>
+                        </div>
+                    </form>
+                    <div class="SEARCH_results">
+                    </div>
+                </div>
+            </div>
+            <div class="TAB_page" data-tab_page="settings">
+                <table class="MPD_setting">
+                    <tr>
+                        <th>Repeat:</th><td><input type="checkbox" data-setting="repeat" onchange="UI.settingChange(this);"/></td>
+                    </tr>
+                    <tr>
+                        <th>Single:</th><td><input type="checkbox" data-setting="single" onchange="UI.settingChange(this);"/></td>
+                    </tr>
+                    <tr>
+                        <th>Consume:</th><td><input type="checkbox" data-setting="consume" onchange="UI.settingChange(this);"/></td>
+                    </tr>
+                    <tr>
+                        <th>Random:</th><td><input type="checkbox" data-setting="random" onchange="UI.settingChange(this);"/></td>
+                    </tr>
+                    <tr>
+                        <th>Crossfade:</th><td><input type="number" data-setting="crossfade" onchange="UI.settingChange(this);" onkeyup="UI.settingChange(this);" min="0" step="1"/>(seconds)</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="TAB_control">
+            <div class="TAB_button" data-tab_page="queue">Queue</div>
+            <div class="TAB_button" data-tab_page="playlists">Playlists</div>
+            <div class="TAB_button" data-tab_page="files">Files</div>
+            <div class="TAB_button" data-tab_page="search">Search</div>
+            <div class="TAB_button" data-tab_page="settings">Settings</div>
+        </div>
+    </div>
+
+    <div class="hide_the_fucking_address_bar">&nbsp;</div>
+</body>
+</html>

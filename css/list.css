@@ -1,0 +1,22 @@
+.LIST_container .LIST_header{
+    flex-grow:0;
+}
+
+.LIST_content_container{
+    overflow-y:auto;
+}
+
+.LIST_empty{
+    display: none;
+}
+.LIST_empty.LIST_is_actually_empty{
+    display: initial;
+}
+
+.LIST_header{
+    margin: 5px;
+}
+
+.LIST_header li{
+    display: inline;
+}

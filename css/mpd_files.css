@@ -1,0 +1,70 @@
+/*********\
+|* files *|
+\*********/
+
+.MPD_files{
+    overflow-y: scroll;
+    height: 0;
+}
+
+.MPD_files > ul{
+    padding-left:1em;
+}
+
+/*don't show collapsed directories*/
+.LIST_item.collapsed{
+    display:none;
+}
+
+.MPD_directory_children{
+    padding-left: 0;
+}
+
+/*don't show directories that are children of non-expanded directories*/
+li.LIST_directory:not(.expanded) .MPD_directory_children .LIST_item{
+    display:none;
+}
+
+.expanded > *, .LIST_item.expanded {
+    display: inline;
+}
+
+.LIST_directory.LIST_item:not(.root) {
+    list-style: none;
+    background-image:  url(../img/folder.svg);
+    background-position: 5px center;
+    padding-left: 2em;
+    margin: 10px 0;
+    white-space: nowrap;
+    width:0;
+}
+
+.LIST_directory.expanded {
+    border-style: solid;
+    border-right: none;
+    padding-left: 0;
+}
+
+.LIST_directory.expanded:not(.root) {
+    background-image: url(../img/chevron-left.svg);
+    padding-left: 1em;
+    background-position-x: -0.1em;
+}
+
+.LIST_directory .LIST_song_add{
+    width: 1em;
+    display: inline-block;
+    margin: 0 0 0 1em;
+    background-image:  url(../img/plus.svg);
+}
+
+.LIST_directory .LIST_song_add_playlist{
+    width: 1em;
+    display: inline-block;
+    margin: 0 0 0 1em;
+    background-image:  url(../img/list.svg);
+}
+
+.MPD_directory_children .LIST_song{
+    white-space: normal;
+}
