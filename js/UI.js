@@ -914,6 +914,7 @@ var UI = (function(){
      */
     function doSearch(element){
        var params = getSearchCriteria();
+       $('.MPD_search .SEARCH_results').empty();
        UI.client.search(params, function(results){
            var options_code = '';
            results.forEach(function(result){
