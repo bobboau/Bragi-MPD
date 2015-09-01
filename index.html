@@ -250,11 +250,6 @@ template for search criteria
                             <div class="MPD_controller_current_song_artist marque_overflow"></div>
                             <div class="MPD_controller_current_song_album marque_overflow"></div>
                         </div>
-
-                    <!--
-                        <div class="MPD_controller_middle_upper_controls">
-                        </div>
-                -->
                     </div>
                     <div class="hbox">
                         <div class="MPD_prev MPD_button" onclick="UI.previous();"></div>
@@ -280,6 +275,7 @@ template for search criteria
                     <ul class="LIST_header LIST_song_toolbar MPD_toolbar">
                         <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
                         <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
+                        <li class="LIST_remove_current MPD_button" onclick="UI.removeCurrenSong(this);">Remove Current Song</li>
                     </ul>
                     <div class="LIST_empty">
                         The Queue is empty!

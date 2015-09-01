@@ -5,37 +5,22 @@
     height:60px;
 }
 
-.hide_the_fucking_address_bar{
-    display:none;
-}
-@media screen and (max-device-width: 720px){
-    .hide_the_fucking_address_bar{
-        display: initial;
-        position: absolute;
-        top:100%;
-        width:100%;
-        background-color: black;
-        height:512px;
-        z-index: -1;
-    }
-}
-
-.MPD_play{
+.MPD_play.MPD_button{
     width: 60px;
     background-image:  url(../img/media-play.svg);
 }
 
-.MPD_pause{
+.MPD_pause.MPD_button{
     width: 60px;
     background-image:  url(../img/media-pause.svg);
 }
 
-.MPD_prev{
+.MPD_prev.MPD_button{
     width: 30px;
     background-image:  url(../img/media-skip-backward.svg);
 }
 
-.MPD_next{
+.MPD_next.MPD_button{
     width: 30px;
     background-image:  url(../img/media-skip-forward.svg);
 }

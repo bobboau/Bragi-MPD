@@ -51,6 +51,7 @@
 
 .LIST_song .LIST_song_path{
     font-size: 0.75em;
+    text-align: right;
 }
 
 .LIST_song .LIST_song_path::before{
@@ -62,7 +63,7 @@
     font-size: 1.5em;
 }
 
-.LIST_song_minor_information{
+span.LIST_song_minor_information{
     flex-grow: 0;
 }
 

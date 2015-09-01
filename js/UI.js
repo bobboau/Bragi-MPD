@@ -1010,6 +1010,14 @@ var UI = (function(){
         $('.MPD_button.SEARCH_collapse').css({display:'none'});
     }
 
+    /**
+     * what's playing now sucks, I don't want to hear it anymore
+     */
+    function removeCurrenSong(element){
+        var client = getClient();
+        client.removeSongFromQueueById(client.getCurrentSongID());
+    }
+
 
     return {
         play:play,
@@ -1043,6 +1051,7 @@ var UI = (function(){
         appendSearchResultsToQueue:appendSearchResultsToQueue,
         appendSearchResultsToPlaylist:appendSearchResultsToPlaylist,
         expandSearch:expandSearch,
-        collapseSearch:collapseSearch
+        collapseSearch:collapseSearch,
+        removeCurrenSong:removeCurrenSong
     };
 })();

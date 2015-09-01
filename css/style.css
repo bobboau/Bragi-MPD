@@ -34,6 +34,21 @@ html, body{
     }
 }
 
+.hide_the_fucking_address_bar{
+    display:none;
+}
+@media screen and (max-device-width: 720px){
+    .hide_the_fucking_address_bar{
+        display: initial;
+        position: absolute;
+        top:100%;
+        width:100%;
+        background-color: black;
+        height:512px;
+        z-index: -1;
+    }
+}
+
 input[type=range][orient=vertical]{
     -webkit-appearance: slider-vertical;
     appearance: slider-vertical;

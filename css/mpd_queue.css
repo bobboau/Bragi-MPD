@@ -2,6 +2,13 @@
     height:0;
 }
 
+.MPD_queue .LIST_header{
+    flex-grow:0;
+    overflow-x: auto;
+    min-height: 1.5em;
+    white-space: nowrap;
+}
+
 .LIST_song_toolbar .LIST_song_play{
     min-width: 1em;
     margin: 0 0 0 1em;
@@ -28,6 +35,12 @@
 
 .LIST_save_queue.MPD_button{
     background-image:  url(../img/save.svg);
+    background-position: left center;
+    padding-left: 2em;
+}
+
+.LIST_remove_current.MPD_button{
+    background-image:  url(../img/x.svg);
     background-position: left center;
     padding-left: 2em;
 }
