@@ -69,3 +69,8 @@
 .LIST_song_property{
     margin-left: 10px;
 }
+
+.LIST_song_toolbar.MPD_toolbar .MPD_button{
+    margin-top: 0;
+    margin-bottom: auto;
+}

@@ -40,9 +40,9 @@ template for a song on the queue
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse" onclick="UI.playQueueSong(this)"></span>
+                        <span></span>
                         <span class="LIST_song_play MPD_button colapse" onclick="UI.playQueueSong(this)">&nbsp;</span>
                         <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeQueueSong(this)">&nbsp;</span>
-                        <span/>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -74,9 +74,9 @@ template for a song on a playlist
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span></span>
                         <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
                         <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
-                        <span/>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -108,10 +108,10 @@ template for a song file
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span></span>
                         <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
                         <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
                         <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)">&nbsp;</span>
-                        <span/>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -143,10 +143,10 @@ template for a song search
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
+                        <span></span>
                         <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
                         <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
                         <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)">&nbsp;</span>
-                        <span/>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -164,7 +164,7 @@ generic template for any song on any list
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
-                        <span/>
+                        <span></span>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -217,11 +217,11 @@ template for lists
 template for search criteria
 -->
     <template id="template_SEARCH_criteria">
-        <tr>
-            <th><select class="SEARCH_criteria_type" onchange="UI.updateSearchEditor(this);" /></th>
-            <td><input class="SEARCH_criteria_value" onchange="UI.onSearchCriteriaValueChange(this);" /></td>
-            <td><div class="MPD_button SEARCH_remove" onclick="UI.removeSearchCriteria(this);">Remove</div></td>
-        </tr>
+        <div class="hbox colapse SEARCH_criteria_row">
+            <select class="SEARCH_criteria_type" onchange="UI.updateSearchEditor(this);" />
+            <input class="SEARCH_criteria_value" onchange="UI.onSearchCriteriaValueChange(this);" />
+            <div class="MPD_button SEARCH_remove colapse" onclick="UI.removeSearchCriteria(this);">Remove</div>
+        </div>
     </template>
 
 </head>
@@ -278,8 +278,8 @@ template for search criteria
             <div class="TAB_page TAB_default vbox" data-tab_page="queue">
                 <div class="MPD_queue LIST">
                     <ul class="LIST_header LIST_song_toolbar MPD_toolbar">
-                        <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">|Clear Queue</li>
-                        <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">|Save Queue</li>
+                        <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
+                        <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
                     </ul>
                     <div class="LIST_empty">
                         The Queue is empty!
@@ -295,8 +295,8 @@ template for search criteria
                 <div class="MPD_playlist LIST">
                     <ul class="LIST_header LIST_playlist_toolbar MPD_toolbar">
                         <li><select class="MPD_playlist_list" onchange="UI.selectPlaylist(this);"></select></li><br/>
-                        <li class="LIST_load_playlist MPD_button" onclick="UI.loadPlaylist(this);">|Load Into Queue</li>
-                        <li class="LIST_delete_playlist MPD_button" onclick="UI.deletePlaylist(this);">|Delete Playlist</li>
+                        <li class="LIST_load_playlist MPD_button" onclick="UI.loadPlaylist(this);">Load Into Queue</li>
+                        <li class="LIST_delete_playlist MPD_button" onclick="UI.deletePlaylist(this);">Delete Playlist</li>
                     </ul>
                     <div class="LIST_empty">
                         <!--No songs in this playlist!-->
@@ -311,20 +311,25 @@ template for search criteria
                 </div>
             </div>
             <div class="TAB_page vbox" data-tab_page="search">
-                <div class="MPD_search">
+                <div class="MPD_search vbox">
                     <form>
-                        <table class="SEARCH_criteria"></table>
-                        <div>
+                        <div class="SEARCH_criteria vbox"></div>
+                        <div class="SEARCH_criteria_control">
                             <span class="MPD_button SEARCH_add_criteria" onclick="UI.addSearchCriteria(this);">Add Criteria</span>
                             <span class="MPD_button SEARCH_clear_criteria" onclick="UI.resetSearch(this);">Clear Criteria</span>
                         </div>
-                        <div>
+                        <div class="SEARCH_control">
                             <span class="MPD_button SEARCH_do_search" onclick="UI.doSearch(this);">Search</span>
-                            <span class="MPD_button SEARCH_append_to_queue" onclick="UI.appendSearchResultsToQueue(this);">to Queue</span>
-                            <span class="MPD_button SEARCH_append_to_playlist" onclick="UI.appendSearchResultsToPlaylist(this);">to Playlist</span>
+                            <span class="MPD_button SEARCH_expand" style="display:none" onclick="UI.expandSearch(this);">Expand</span>
+                            <span class="MPD_button SEARCH_collapse" onclick="UI.collapseSearch(this);">Collapse</span>
                         </div>
                     </form>
                     <div class="SEARCH_results">
+                    </div>
+                    <div class="SEARCH_results_control">
+                        Append Results:
+                        <span class="MPD_button SEARCH_append_to_queue" onclick="UI.appendSearchResultsToQueue(this);">to Queue</span>
+                        <span class="MPD_button SEARCH_append_to_playlist" onclick="UI.appendSearchResultsToPlaylist(this);">to Playlist</span>
                     </div>
                 </div>
             </div>

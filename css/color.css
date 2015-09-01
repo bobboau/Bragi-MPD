@@ -9,6 +9,14 @@ colors
 */
 
 
+select{
+    background-color: #C5D1C3;
+}
+
+input{
+    background-color: #C5D1C3;
+}
+
 .UI_main .TAB_body{
     background-color: #C5D1C3;
 }

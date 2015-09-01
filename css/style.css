@@ -39,12 +39,18 @@ input[type=range][orient=vertical]{
     appearance: slider-vertical;
 }
 
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: url(/img/chevron-bottom.svg) no-repeat right 5px center;
+}
+
 .MPD_button{
     cursor: pointer;
     background-size:   contain;
     background-repeat: no-repeat;
     background-position: center center;
-    border-radius: 5px;
 }
 
 .MPD_button *{
@@ -134,12 +140,8 @@ input[type=range][orient=vertical]{
 .MPD_toolbar .MPD_button{
     font-size: 0.75em;
     display: inline-block;
-    margin-left: 1.5em;
-}
-
-.MPD_toolbar .MPD_button::first-letter{
-    font-size: 2em;
-    color: transparent;
+    padding-left: 1.5em;
+    margin-left: 0.75em;
 }
 
 .MPD_toolbar{

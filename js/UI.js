@@ -810,7 +810,7 @@ var UI = (function(){
     function getSearchCriteria(stop_at){
        var params = {}
        //iterate over the rows of the form to get the search parameters
-       $('.MPD_search .SEARCH_criteria tr').each(function(i, row){
+       $('.MPD_search .SEARCH_criteria .SEARCH_criteria_row').each(function(i, row){
            var tag = $(row).find('.SEARCH_criteria_type').val();
            var val = $(row).find('.SEARCH_criteria_value').val();
            if(stop_at == tag){
@@ -848,12 +848,12 @@ var UI = (function(){
       * update the search criteria value editor associated with the given tag type selector
       */
     function updateSearchEditor(element, onComplete){
-        var target = $(element).closest('tr').find('.SEARCH_criteria_value');
+        var target = $(element).closest('.SEARCH_criteria_row').find('.SEARCH_criteria_value');
         var tag = $(element).val();
 
         //remove all criteria type options that have been selected elsewhere from all criteria type selectors, except unless they are the source of that criteria type
         var options = UI.client.getTagTypes();
-        $('.MPD_search .SEARCH_criteria tr').each(function(i, row){
+        $('.MPD_search .SEARCH_criteria .SEARCH_criteria_row').each(function(i, row){
             var options_code = '';
             var old_val = $(row).find('.SEARCH_criteria_type').val();
             var selected_value = $(row).find('.SEARCH_criteria_value').val();
@@ -905,7 +905,7 @@ var UI = (function(){
      */
     function removeSearchCriteria(element){
         var next = $(element).next();
-        $(element).parents('form tr').remove();
+        $(element).parents('form .SEARCH_criteria_row').remove();
         onSearchCriteriaValueChange(next);
     }
 
@@ -933,7 +933,7 @@ var UI = (function(){
                 return;
             }
         }
-        $('.MPD_search .SEARCH_criteria tr').remove();
+        $('.MPD_search .SEARCH_criteria .SEARCH_criteria_row').remove();
         addSearchCriteria(element);
     }
 
@@ -941,7 +941,7 @@ var UI = (function(){
      * called when the criteria value changes, makes sure supsequent criteria are properly constrained
      */
     function onSearchCriteriaValueChange(element){
-        var next = $(element).closest('tr').next();
+        var next = $(element).closest('.SEARCH_criteria_row').next();
         function doNext(){
             if(next.length > 0){
                 updateSearchEditor($(next).find('.SEARCH_criteria_type'), doNext);
@@ -970,8 +970,8 @@ var UI = (function(){
             return;
         }
         var result_element = $(element).parents('.MPD_search').find('.SEARCH_results');
-        result_element.find('[data-mpd_file_path]').each(function(garbage,song_element){
-            getClient().addSongToPlaylistByFile(playlist, $(song_element).data(mpd_file_path));
+        result_element.find('[data-mpd_file_name]').each(function(garbage,song_element){
+            getClient().addSongToPlaylistByFile(playlist, $(song_element).data('mpd_file_name'));
         });
     }
 
@@ -985,6 +985,29 @@ var UI = (function(){
         }
         var song_path = $(element).closest('[data-mpd_file_name]').data('mpd_file_name');
         getClient().addSongToPlaylistByFile(playlist, song_path);
+    }
+
+    /**
+     * make the search criteria visible
+     */
+    function expandSearch(element){
+        $('.SEARCH_criteria_control').css({display:''});
+        $('.SEARCH_criteria').css({display:''});
+
+        $('.MPD_button.SEARCH_expand').css({display:'none'});
+        $('.MPD_button.SEARCH_collapse').css({display:''});
+
+    }
+
+    /**
+     * make the search criteria invisible
+     */
+    function collapseSearch(element){
+        $('.SEARCH_criteria_control').css({display:'none'});
+        $('.SEARCH_criteria').css({display:'none'});
+
+        $('.MPD_button.SEARCH_expand').css({display:''});
+        $('.MPD_button.SEARCH_collapse').css({display:'none'});
     }
 
 
@@ -1018,6 +1041,8 @@ var UI = (function(){
         resetSearch:resetSearch,
         onSearchCriteriaValueChange:onSearchCriteriaValueChange,
         appendSearchResultsToQueue:appendSearchResultsToQueue,
-        appendSearchResultsToPlaylist:appendSearchResultsToPlaylist
+        appendSearchResultsToPlaylist:appendSearchResultsToPlaylist,
+        expandSearch:expandSearch,
+        collapseSearch:collapseSearch
     };
 })();
