@@ -51,10 +51,15 @@ li.LIST_directory:not(.expanded) .MPD_directory_children .LIST_item{
     background-position-x: -0.1em;
 }
 
+.expanded > div > .LIST_song_add{
+    display: none;
+}
+
 .LIST_directory .LIST_song_add{
-    width: 1em;
+    width: 0;
     display: inline-block;
-    margin: 0 0 0 1em;
+    padding-left: 2.5em;
+    font-size: .75em;
     background-image:  url(../img/plus.svg);
 }
 
