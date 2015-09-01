@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/tab.css"/>
     <link rel="stylesheet" href="css/list.css"/>
     <link rel="stylesheet" href="css/mpd_controller.css"/>
+    <link rel="stylesheet" href="css/mpd_instances.css"/>
     <link rel="stylesheet" href="css/mpd_queue.css"/>
     <link rel="stylesheet" href="css/mpd_playlist.css"/>
     <link rel="stylesheet" href="css/mpd_files.css"/>
@@ -227,6 +228,20 @@ template for search criteria
         </div>
     </template>
 
+<!--
+template for an instance
+-->
+    <template id="template_INSTANCE">
+        <div class="vbox INSTANCE_instance" onclick="UI.selectInstance(this)" data-instance_idx="">
+            <table>
+                <tr><th>Name:</th><td class="INSTANCE_name"></td></tr>
+                <tr><th>Port:</th><td class="INSTANCE_port"></td></tr>
+                <tr><th>Host Name:</th><td class="INSTANCE_host"></td></tr>
+                <tr><th>Connection Status:</th><td class="INSTANCE_connection_status"></td></tr>
+            </table>
+        </div>
+    </template>
+
 </head>
 <body>
     <div class="TAB_container UI_main">
@@ -266,6 +281,18 @@ template for search criteria
                         <img class="MPD_icon" src="img/volume-low.svg"/>
                     </div>
                     <input class="MPD_volume" orient="vertical" type="range" min="0" max="1" step="0.0000001"  onchange="UI.setVolume(this);"></input>
+                </div>
+            </div>
+
+<!--
+< INSTANCES
+< list of available instances
+-->
+            <div class="TAB_page vbox" data-tab_page="instance">
+                <div class="MPD_instances">
+                    <div class="empty">
+                        No Instances Configured! See config.js!
+                    </div>
                 </div>
             </div>
 
@@ -353,6 +380,7 @@ template for search criteria
             </div>
         </div>
         <div class="TAB_control">
+            <div class="TAB_button" data-tab_page="instance">Instances</div>
             <div class="TAB_button" data-tab_page="queue">Queue</div>
             <div class="TAB_button" data-tab_page="playlists">Playlists</div>
             <div class="TAB_button" data-tab_page="files">Files</div>

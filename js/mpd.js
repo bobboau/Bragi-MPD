@@ -44,7 +44,9 @@ function MPD(_port, _host){
     self.getState = function(){
         var ret = cloneObject(_private.state);
         //there are a few things we can't easily clone, but I made a clone method for those, so we can deal with this
-        ret.current_queue = _private.state.current_queue.clone();
+        if(_private.state.current_queue !== null){
+            ret.current_queue = _private.state.current_queue.clone();
+        }
 
         ret.playlists = [];
         _private.state.playlists.forEach(function(playlist){

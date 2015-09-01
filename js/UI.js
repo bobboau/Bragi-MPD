@@ -6,6 +6,7 @@ var UI = (function(){
 
     var UI = {
         clients: [],
+        active_client:0,
         onChange:{
             state:[],
             queue:[],
@@ -20,7 +21,9 @@ var UI = (function(){
     $(function(){
         overrideMpd();
 
-        CONFIG.clients.forEach(function(client_config){
+        setupInstances();
+
+        CONFIG.clients.forEach(function(client_config, idx){
             var client = MPD(client_config.port, client_config.hostname);
 
             client.name = client_config.name;
@@ -31,28 +34,18 @@ var UI = (function(){
 
             client.on('PlaylistsChanged',updatePlaylists);
 
-            var loaded = false;
-            client.on('DataLoaded',function(){
-                if(!loaded){
-                    loaded = true;
-                    setTimeout(function(){
-                        //manually make the file root
-                        var element = $('.MPD_file_placeholder');
-                        var contents = $($('#template_LIST_directory').html());
-                        element.replaceWith(contents);
+            client.on('DataLoaded', updateFiles);
 
-                        //populate the file root
-                        var root = $('[data-tab_page=files] .LIST_directory');
-                        populateFileList(root);
-                        //the root is treated differently than the rest of the oflders
-                        //you can't close it and it shouldn't have the common tools
-                        //because 'add all music' is a sort of dangerous button on root
-                        root.addClass('expanded root');
-                        root.find('.LIST_directory_path').html('Music Files');
-                        root.find('.MPD_button').remove();
-                        resetSearch(null, true);
-                    }, 100);
-                }
+            client.on('Connect',function(){
+                var element = $('[data-instance_idx='+idx+'] .INSTANCE_connection_status');
+                element.html('Connected!');
+                element.addClass('good')
+            });
+
+            client.on('Disconnect',function(){
+                var element = $('[data-instance_idx='+idx+'] .INSTANCE_connection_status');
+                element.html('Not Connected!');
+                element.addClass('bad')
             });
 
             UI.clients.push(client);
@@ -210,6 +203,34 @@ var UI = (function(){
     }
 
     /**
+     * do the one time setup of multiple instances
+     */
+    function setupInstances(){
+        if(CONFIG.clients.length === 1){
+            //if there is only one instance there is no point in showing the instances tab
+            //even 0 instances will show an error message
+            $('.TAB_control [data-tab_page=instance].TAB_button').hide();
+        }
+        if(CONFIG.clients.length !== 0){
+            $('.MPD_instances .empty').remove();
+        }
+
+        CONFIG.clients.forEach(function(client_config, idx){
+            var contents = $($('#template_INSTANCE').html());
+            contents.attr('data-instance_idx', idx);
+            contents.find('.INSTANCE_name').html(client_config.name);
+            contents.find('.INSTANCE_port').html(client_config.port);
+            if(client_config.hostname){
+                contents.find('.INSTANCE_host').html(client_config.hostname);
+            }
+            else{
+                contents.find('.INSTANCE_host').remove();
+            }
+            $('.MPD_instances').append(contents);
+        });
+    }
+
+    /**
      * update our UI on a state change
      */
     function updateState(state, client){
@@ -298,6 +319,35 @@ var UI = (function(){
     }
 
     /**
+     * setup the file browser
+     */
+    function updateFiles(){
+        setTimeout(function(){
+            var element = $('.MPD_file_placeholder');
+            if(element.length){
+                //manually make the file root if it does not exsist
+                var contents = $($('#template_LIST_directory').html());
+                element.replaceWith(contents);
+            }
+            else{
+                //empty out anexsisting root
+                $('[data-tab_page=files] .LIST_directory .MPD_directory_children').empty();
+            }
+
+            //populate the file root
+            var root = $('[data-tab_page=files] .LIST_directory');
+            populateFileList(root);
+            //the root is treated differently than the rest of the oflders
+            //you can't close it and it shouldn't have the common tools
+            //because 'add all music' is a sort of dangerous button on root
+            root.addClass('expanded root');
+            root.find('.LIST_directory_path').html('Music Files');
+            root.find('.MPD_button').remove();
+            resetSearch(null, true);
+        }, 100);
+    }
+
+    /**
      * update our UI for ticking of play time
      */
     function updatePlaytime(client){
@@ -355,7 +405,7 @@ var UI = (function(){
      * gets the appropriate client
      */
     function getClient(){
-        return UI.clients[0];
+        return UI.clients[UI.active_client];
     }
 
     /**
@@ -1024,6 +1074,22 @@ var UI = (function(){
         client.removeSongFromQueueById(client.getCurrentSongID());
     }
 
+    /**
+     * set the active client to the one that was just clicked on
+     */
+    function selectInstance(element){
+        var idx = $(element).closest('[data-instance_idx]').data('instance_idx');
+        if(UI.clients[idx].isConnected()){
+            UI.active_client = idx;
+            var client = getClient();
+            updateState(client.getState(), client);
+            updateQueue(client.getQueue(), client);
+            updatePlaylists(client.getPlaylists, client);
+        }
+        else{
+            alert("Error: cannot switch to a disconnected client");
+        }
+    }
 
     return {
         play:play,
@@ -1058,6 +1124,7 @@ var UI = (function(){
         appendSearchResultsToPlaylist:appendSearchResultsToPlaylist,
         expandSearch:expandSearch,
         collapseSearch:collapseSearch,
-        removeCurrenSong:removeCurrenSong
+        removeCurrenSong:removeCurrenSong,
+        selectInstance:selectInstance
     };
 })();

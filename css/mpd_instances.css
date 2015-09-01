@@ -1,0 +1,9 @@
+.MPD_instances .INSTANCE_instance{
+    cursor: pointer;
+    border-style: solid;
+    margin: 1em;
+}
+
+.MPD_instances .INSTANCE_instance *{
+    cursor: pointer;
+}
