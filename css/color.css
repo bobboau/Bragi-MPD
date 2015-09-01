@@ -104,3 +104,11 @@ input{
     background-image: linear-gradient(90deg, #7BA777 0%, #9FBA9C 95%);
     border-color: #38912F;
 }
+
+/**********\
+|* search *|
+\**********/
+
+.SEARCH_control {
+    background-color: #C5D1C3;
+}
