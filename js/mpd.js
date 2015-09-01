@@ -10,9 +10,10 @@
  * //set handler for when the state changes
  * mpd_client.on('StateChanged', updateUiFunction);
  * @class
- * @param {Integer} [port_number] - the portnumber our client should try to cennect to our winsockifyed MPD instance with
+ * @param {Integer} [_port] - the portnumber our client should try to cennect to our winsockifyed MPD instance with
+ * @param {String} [_host=document.URL] - hostname to try to connect to, defaults to the domain of the current page
  */
-function MPD(_port){
+function MPD(_port, _host){
 
     /**
      * this will be the final output interface, but it is used to refer to the client as a 'this' like object
@@ -76,6 +77,15 @@ function MPD(_port){
      */
     self.getPort = function(){
         return _port;
+    };
+
+    /**
+     * return the host this client was instansiated with and thet it is (attempting to) connect with
+     * @instance
+     * @returns {String} the host name the MPD client is (trying to be) connected to
+     */
+    self.getHost = function(){
+        return _host;
     };
 
     /**
@@ -947,7 +957,11 @@ function MPD(_port){
     function getAppropriateWsUrl()
     {
       var protocol = '';
-      var url = document.URL;
+      var url = _host;
+      if(typeof url === 'undefined'){
+          //change the url so it points to the root
+          _host = url = document.URL.replace(/((?:https?:\/\/)?[^\/]+).*/, '$1');
+      }
 
       /*
        * We open the websocket encrypted if this page came on an
@@ -955,17 +969,20 @@ function MPD(_port){
        */
 
       //figure out protocol to use
-      if (url.substring(0, 5) == "https") {
+      if(url.substring(0, 5) == "https"){
           protocol = "wss://";
           url = url.substr(8);
-      } else {
+      }
+      if(url.substring(0, 3) == "wss"){
+          protocol = "wss://";
+          url = url.substr(6);
+      }
+      else{
           protocol = "ws://";
-          if (url.substring(0, 4) == "http")
-              url = url.substr(7);
+          url = url.replace(/^\w+:\/\//, '');
       }
 
-      //change the url so it points to the root
-      url = protocol+(url.split('/')[0]);
+      url = protocol+url;
 
       if(_port){
         //use the port this client was initialized with

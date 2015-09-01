@@ -5,7 +5,7 @@ var UI = (function(){
      */
 
     var UI = {
-        client: null,
+        clients: [],
         onChange:{
             state:[],
             queue:[],
@@ -20,45 +20,51 @@ var UI = (function(){
     $(function(){
         overrideMpd();
 
-        UI.client = MPD(8800);
+        CONFIG.clients.forEach(function(client_config){
+            var client = MPD(client_config.port, client_config.hostname);
 
-        UI.client.on('StateChanged',updateState);
+            client.name = client_config.name;
 
-        UI.client.on('QueueChanged',updateQueue);
+            client.on('StateChanged',updateState);
 
-        UI.client.on('PlaylistsChanged',updatePlaylists);
+            client.on('QueueChanged',updateQueue);
 
-        var loaded = false;
-        UI.client.on('DataLoaded',function(){
-            if(!loaded){
-                loaded = true;
-                setTimeout(function(){
-                    //manually make the file root
-                    var element = $('.MPD_file_placeholder');
-                    var contents = $($('#template_LIST_directory').html());
-                    element.replaceWith(contents);
+            client.on('PlaylistsChanged',updatePlaylists);
 
-                    //populate the file root
-                    var root = $('[data-tab_page=files] .LIST_directory');
-                    populateFileList(root);
-                    //the root is treated differently than the rest of the oflders
-                    //you can't close it and it shouldn't have the common tools
-                    //because 'add all music' is a sort of dangerous button on root
-                    root.addClass('expanded root');
-                    root.find('.LIST_directory_path').html('Music Files');
-                    root.find('.MPD_button').remove();
-                    resetSearch(null, true);
-                }, 100);
-            }
+            var loaded = false;
+            client.on('DataLoaded',function(){
+                if(!loaded){
+                    loaded = true;
+                    setTimeout(function(){
+                        //manually make the file root
+                        var element = $('.MPD_file_placeholder');
+                        var contents = $($('#template_LIST_directory').html());
+                        element.replaceWith(contents);
+
+                        //populate the file root
+                        var root = $('[data-tab_page=files] .LIST_directory');
+                        populateFileList(root);
+                        //the root is treated differently than the rest of the oflders
+                        //you can't close it and it shouldn't have the common tools
+                        //because 'add all music' is a sort of dangerous button on root
+                        root.addClass('expanded root');
+                        root.find('.LIST_directory_path').html('Music Files');
+                        root.find('.MPD_button').remove();
+                        resetSearch(null, true);
+                    }, 100);
+                }
+            });
+
+            UI.clients.push(client);
         });
 
 
         setInterval(function(){
-            updatePlaytime(UI.client);
+            updatePlaytime(getClient());
         },150);
 
         setInterval(function(){
-            updatePageTitle(UI.client);
+            updatePageTitle(getClient());
         },250);
 
         //setup event handlers for marque elements
@@ -349,7 +355,7 @@ var UI = (function(){
      * gets the appropriate client
      */
     function getClient(){
-        return UI.client;
+        return UI.clients[0];
     }
 
     /**
@@ -825,7 +831,7 @@ var UI = (function(){
      * element -- the element that triggered the event (tells us which playlist to use)
      */
     function addSearchCriteria(element){
-        var options = UI.client.getTagTypes();
+        var options = getClient().getTagTypes();
         var options_code = '';
         var exsisting_types = Object.keys(getSearchCriteria());
         options.forEach(function(option){
@@ -852,7 +858,7 @@ var UI = (function(){
         var tag = $(element).val();
 
         //remove all criteria type options that have been selected elsewhere from all criteria type selectors, except unless they are the source of that criteria type
-        var options = UI.client.getTagTypes();
+        var options = getClient().getTagTypes();
         $('.MPD_search .SEARCH_criteria .SEARCH_criteria_row').each(function(i, row){
             var options_code = '';
             var old_val = $(row).find('.SEARCH_criteria_type').val();
@@ -876,7 +882,7 @@ var UI = (function(){
             if(typeof params[tag] !== 'undefined'){
                 delete params[tag];
             }
-            UI.client.tagSearch(
+            getClient().tagSearch(
                 tag,
                 params,
                 function(options){
@@ -915,7 +921,7 @@ var UI = (function(){
     function doSearch(element){
        var params = getSearchCriteria();
        $('.MPD_search .SEARCH_results').empty();
-       UI.client.search(params, function(results){
+       getClient().search(params, function(results){
            var options_code = '';
            results.forEach(function(result){
                $('.MPD_search .SEARCH_results').append(result.getItemUI());
