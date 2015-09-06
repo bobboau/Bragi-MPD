@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/tab.css"/>
     <link rel="stylesheet" href="css/list.css"/>
     <link rel="stylesheet" href="css/mpd_controller.css"/>
+    <link rel="stylesheet" href="css/mpd_output.css"/>
     <link rel="stylesheet" href="css/mpd_instances.css"/>
     <link rel="stylesheet" href="css/mpd_queue.css"/>
     <link rel="stylesheet" href="css/mpd_playlist.css"/>
@@ -242,6 +243,26 @@ template for an instance
         </div>
     </template>
 
+<!--
+template for an output
+-->
+    <template id="template_OUTPUT">
+        <div class="vbox OUTPUT_output" data-output_id="">
+            <table>
+                <tr><th>Name:</th><td class="OUTPUT_name"></td></tr>
+                <tr>
+                    <th>Enabled:</th>
+                    <td>
+                        <span class="OUTPUT_enabled"></span>
+                        <span class="OUTPUT_switch_to MPD_button" onclick="UI.switchToOutput(this)">Switch to</span>
+                        <span class="OUTPUT_enable MPD_button" onclick="UI.enableOutput(this)">Enable</span>
+                        <span class="OUTPUT_disable MPD_button" onclick="UI.disableOutput(this)">Disable</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
 </head>
 <body>
     <div class="TAB_container UI_main">
@@ -297,6 +318,18 @@ template for an instance
             </div>
 
 <!--
+< OUTPUTS
+< list of outputs and ability to turn them on/off
+-->
+            <div class="TAB_page vbox" data-tab_page="output">
+                <div class="MPD_outputs">
+                    <div class="empty">
+                        No Outputs Configured!
+                    </div>
+                </div>
+            </div>
+
+<!--
 < QUEUE
 < list of currently playing songs
 -->
@@ -306,6 +339,7 @@ template for an instance
                         <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
                         <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
                         <li class="LIST_remove_current MPD_button" onclick="UI.removeCurrenSong(this);">Remove Current Song</li>
+                        <li class="LIST_show_current MPD_button" onclick="UI.showCurrenSong(this);">Scroll to Current Song</li>
                     </ul>
                     <div class="LIST_empty">
                         The Queue is empty!
@@ -329,6 +363,11 @@ template for an instance
                     </div>
                 </div>
             </div>
+
+<!--
+< FILES
+< recursive listing of all files in MPD music directory
+-->
             <div class="TAB_page vbox" data-tab_page="files">
                 <div class="MPD_files">
                     <ul>
@@ -336,6 +375,11 @@ template for an instance
                     </ul>
                 </div>
             </div>
+
+<!--
+< SEARCH
+< search capability
+-->
             <div class="TAB_page vbox" data-tab_page="search">
                 <div class="MPD_search vbox">
                     <form>
@@ -359,6 +403,11 @@ template for an instance
                     </div>
                 </div>
             </div>
+
+<!--
+< SETTINGS
+< all of the runtime configurable options
+-->
             <div class="TAB_page" data-tab_page="settings">
                 <table class="MPD_setting">
                     <tr>
@@ -381,6 +430,7 @@ template for an instance
         </div>
         <div class="TAB_control">
             <div class="TAB_button" data-tab_page="instance">Instances</div>
+            <div class="TAB_button" data-tab_page="output">Outputs</div>
             <div class="TAB_button" data-tab_page="queue">Queue</div>
             <div class="TAB_button" data-tab_page="playlists">Playlists</div>
             <div class="TAB_button" data-tab_page="files">Files</div>

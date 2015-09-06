@@ -30,8 +30,8 @@ function MPD(_port, _host){
      * @instance
      * @function
      * @throws {Error} an Error if you try to listen to an invalid event type
-     * @param {String} event_name - what sort of event to listen for. must be one of the following:  'Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'StateChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'
-     * @param {disconnectEventHandler|connectEventHandler|playlistsChangedEventHandler|queueChangedEventHandler|stateChangedEventHandler|dataLoadedEventHandler|databaseChangingEventHandler|unhandledEventHandler|eventHandler|errorEventHandler} handler - function called when the given event happens
+     * @param {String} event_name - what sort of event to listen for. must be one of the following:  'Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'OutputChanged', 'StateChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'
+     * @param {disconnectEventHandler|connectEventHandler|playlistsChangedEventHandler|queueChangedEventHandler|outputChangedEventHandler|stateChangedEventHandler|dataLoadedEventHandler|databaseChangingEventHandler|unhandledEventHandler|eventHandler|errorEventHandler} handler - function called when the given event happens
      */
     self.on = on;
 
@@ -292,6 +292,46 @@ function MPD(_port, _host){
             playlists.push(playlist.playlist);
         });
         return playlists;
+    };
+
+
+    /**
+     * returns an array of Output objects
+     * @instance
+     * @returns {Output[]}
+     */
+    self.getOutputs = function(){
+        return _private.outputs.map(function(source){
+            return MPD.Output(self, source);
+        });
+    };
+
+
+    /**
+     * returns true if the output is enabled, false otherwise
+     * @param {Integer} id -- the identifier of the output
+     * @instance
+     */
+    self.outputIsEnabled = function(id){
+        return _private.outputs[id].outputenabled == 1;
+    };
+
+    /**
+     * turns on the output specified by the id
+     * @param {Integer} id -- the identifier of the output to turn on
+     * @instance
+     */
+    self.enableOutput = function(id){
+        issueCommand('enableoutput '+id);
+    };
+
+    /**
+     * turns off the output specified by the id
+     * @param {Integer} id -- the identifier of the output to turn off
+     * @instance
+     */
+    self.disableOutput = function(id){
+        issueCommand('disableoutput '+id);
     };
 
     /**
@@ -678,12 +718,11 @@ function MPD(_port, _host){
     /**
      * return an array of strings which are all of the valid tags
      * note there might be more undocumented tags that you can use just fine not listed here (like musicbrainz)
-     *@todo:use the tagtypes command to fetch these
      * @instance
      * @returns {String[]}
      */
     self.getTagTypes = function getTagTypes(){
-        return   ['any','artist','album','albumartist','title','track','name','genre','date','composer','performer','comment','disc'];
+        return cloneObject(_private.tag_types);
     };
 
     /**
@@ -854,6 +893,16 @@ function MPD(_port, _host){
          queue_version: null,
          playlists:[]
      },
+
+     /**
+      * list of tags that are acceptable for this server
+      */
+     tag_types:[],
+
+     /**
+      * list of available outputs
+      */
+     outputs:[],
 
      /**
       * when was the status last updated
@@ -1164,7 +1213,7 @@ function MPD(_port, _host){
      */
     function on(event_name, handler){
 
-        var acceptable_handlers = ['Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'StateChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'];
+        var acceptable_handlers = ['Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'StateChanged', 'OutputChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'];
 
         if(acceptable_handlers.indexOf(event_name) === -1){
             throw new Error("'"+event_name+"' is not a supported event");
@@ -1342,9 +1391,12 @@ function MPD(_port, _host){
             /*these are all status changed*/
             case 'player': //the player has been started, stopped or seeked
             case 'mixer': //the volume has been changed
-            case 'output': //an audio output has been enabled or disabled
             case 'options': //options like repeat, random, crossfade, replay gain
                 actions.status = true;
+            break;
+
+            case 'output': //an audio output has been enabled or disabled
+                actions.outputs = true;
             break;
 
             /*these are things I'm not interested in (yet)*/
@@ -1384,35 +1436,56 @@ function MPD(_port, _host){
                 //I could probly just rename these and move them somewhere and this would be a lot more readable...
 
                 //this is the basic one, we should always end with this
-                function goBackToWaiting(){
+                function goBackToWaiting(actions){
                     _private.responceProcessor = idleHandler;
                     sendString('idle\n');
                 }
 
                 //reload the statuses
-                function reloadStatus(){
-                    _private.responceProcessor = getStateHandler(goBackToWaiting);
+                function reloadStatus(actions){
+                    _private.responceProcessor = getStateHandler(function(){reloadStuff(actions);});
                     sendString('status\n');
                 }
 
                 //reload the queue, the status, then go back to waiting
-                function reloadQueue(){
-                    _private.responceProcessor = getQueueHandler(goBackToWaiting,'QueueChanged');
+                function reloadQueue(actions){
+                    _private.responceProcessor = getQueueHandler(function(){reloadStuff(actions);},'QueueChanged');
                     sendString('playlistinfo\n');
                 }
 
-                if(actions.queue){
-                    reloadQueue();
+                //reload outputs, then go back to waiting
+                function reloadOutputs(actions){
+                    _private.responceProcessor = getlistHandler(function(outputs){  //loading the outputs
+                        _private.outputs = outputs;
+                        callHandler('OutputChanged',self.getOutputs());
+                        reloadStuff(actions);
+                    });
+                    sendString('outputs\n');
                 }
-                else if(actions.status){
-                    reloadStatus();
+
+                function reloadStuff(actions){
+                    if(actions.queue){
+                        delete actions.queue;
+                        reloadQueue(actions);
+                    }
+                    else if(actions.status){
+                        delete actions.status;
+                        reloadStatus(actions);
+                    }
+                    else if(actions.outputs){
+                        delete actions.outputs;
+                        reloadOutputs(actions);
+                    }
+                    else if(actions.playlist){
+                        delete actions.playlist;
+                        loadAllPlaylists(goBackToWaiting);
+                    }
+                    else{
+                        goBackToWaiting(actions);
+                    }
                 }
-                else if(actions.playlist){
-                    loadAllPlaylists(goBackToWaiting);
-                }
-                else{
-                    goBackToWaiting();
-                }
+
+                reloadStuff(actions);
             }
         }
         else{
@@ -1446,17 +1519,30 @@ function MPD(_port, _host){
     function loadEverything(){
         //this loads all of the data from the MPD server we need
         //it gets the queue first, then the state (because the state references the queue), then all of the playlist data
-        _private.responceProcessor = getQueueHandler(function(){
-            _private.responceProcessor = getStateHandler(function(){
-                loadAllPlaylists(function(){
+        _private.responceProcessor = getQueueHandler(function(){    //initial load of the queue
+            _private.responceProcessor = getStateHandler(function(){    //initial load of the state
+                _private.responceProcessor = getlistHandler(function(tag_types){  //loading the tag types
+                    _private.tag_types = ['any'].concat(
+                        tag_types.map(function(tagtype){
+                            return tagtype.tagtype.toLowerCase();
+                        })
+                    );
+                    _private.responceProcessor = getlistHandler(function(outputs){  //loading the outputs
+                        _private.outputs = outputs;
+                        loadAllPlaylists(function(){
 
-                    //ok everything is loaded...
-                    //just wait for something to change and deal with it
-                    _private.responceProcessor = idleHandler;
-                    sendString('idle\n');
+                            //ok everything is loaded...
+                            //just wait for something to change and deal with it
+                            _private.responceProcessor = idleHandler;
+                            sendString('idle\n');
 
-                    callHandler('DataLoaded',_private.state);
+                            callHandler('DataLoaded',_private.state);
+                        });
+                        callHandler('OutputChanged',self.getOutputs());
+                    });
+                    sendString('outputs\n');
                 });
+                sendString('tagtypes\n');
             });
             sendString('status\n');
         }, 'QueueChanged');
@@ -2014,8 +2100,6 @@ MPD.Directory = function(client, source){
         return source.last_modified;
     };
 
-    return me;
-
     /**
      * return a copy of this object. the point of this is to return an object that the used cannot use to mutate this one, but that has the exact same behaviour
      * @instance
@@ -2024,6 +2108,8 @@ MPD.Directory = function(client, source){
     me.clone = function(){
         return MPD.Directory(client, source);
     };
+
+    return me;
 
     /**
      * metadata returned about a directory from MPD
@@ -2205,6 +2291,87 @@ MPD.Queue = function(client, source){
 }
 
 /**
+ * An audio output that is available to be used
+ * @class Output
+ * @param {MPD} client - the MPD client object that owns this
+ * @param {output_metadata} source - raw metadata javascript object that contains the MPD reported data for this output
+ */
+MPD.Output = function(client, source){
+    var me = {};
+
+    /**
+     * get the MPD reported metadata, raw
+     * @instance
+     * @returns {output_metadata} gets all of the raw metadata MPD provided
+     */
+    me.getMetadata = function(){
+        return JSON.parse(JSON.stringify(source));
+    };
+
+    /**
+     * get the identifier for this output
+     * @instance
+     * @returns {Integer} numeric unique identifier of this output
+     */
+    me.getId = function(){
+        return source.outputid;
+    };
+
+    /**
+     * get the user facing name for this output
+     * @instance
+     * @returns {String} nice, descriptive, human friendly name for the output
+     */
+    me.getName = function(){
+        return source.outputname;
+    };
+
+    /**
+     * is this output making noise
+     * @instance
+     * @returns {Boolean} true if the output is enabled
+     */
+    me.isEnabled = function(){
+        return client.outputIsEnabled(source.outputid);
+    };
+
+    /**
+     * enables this output
+     * @instance
+     */
+    me.enable = function(){
+        return client.enableOutput(source.outputid);
+    };
+
+    /**
+     * disables this output
+     * @instance
+     */
+    me.disable = function(){
+        return client.disableOutput(source.outputid);
+    };
+
+    /**
+     * return a copy of this object. the point of this is to return an object that the used cannot use to mutate this one, but that has the exact same behaviour
+     * @instance
+     * @returns {Directory}
+     */
+    me.clone = function(){
+        return MPD.Directory(client, source);
+    };
+
+    return me;
+
+    /**
+     * metadata returned about an output from MPD
+     * @typedef output_metadata
+     * @property {Integer} outputenabled
+     * @property {Integer} outputid
+     * @property {String} outputname
+     */
+}
+
+/**
  * Is passed a playlist
  * @callback playlistCallback
  * @param {Playlist} playlist - a playlist
@@ -2275,6 +2442,15 @@ MPD.Queue = function(client, source){
  * @type {Object}
  * @callback stateChangedEventHandler
  * @param {state} state - state object, the same as is returned by getState
+ * @param {MPD} client - the client that this event happened on
+ */
+/**
+ * event handler for 'OutputChanged' events
+ * called when an output of the player has changed (enabled/disabled).
+ * @event OutputChanged
+ * @type {Object}
+ * @callback OutputChangedEventHandler
+ * @param {Output[]} outputs - state object, the same as is returned by getState
  * @param {MPD} client - the client that this event happened on
  */
 /**

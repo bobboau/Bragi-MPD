@@ -1,0 +1,37 @@
+.OUTPUT_output{
+    list-style-type: none;
+    border-style: solid;
+    margin: 10px;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.OUTPUT_output .MPD_button{
+    white-space: nowrap;
+    padding-left: 1.5em;
+    background-position: left center;
+    display: inline-block;
+    margin: 0 0 0 1em;
+    cursor: pointer;
+}
+
+.OUTPUT_output .OUTPUT_switch_to{
+    background-image:  url(../img/pick.svg);
+}
+
+.OUTPUT_output .OUTPUT_enable{
+    background-image:  url(../img/plus.svg);
+}
+
+.OUTPUT_output .OUTPUT_disable{
+    background-image:  url(../img/minus.svg);
+    display:none;
+}
+
+.OUTPUT_output.selected .OUTPUT_enable{
+    display:none;
+}
+
+.OUTPUT_output.selected .OUTPUT_disable{
+    display:inline;
+}

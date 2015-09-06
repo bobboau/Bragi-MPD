@@ -32,6 +32,8 @@ var UI = (function(){
 
             client.on('QueueChanged',updateQueue);
 
+            client.on('OutputChanged',updateOutputs);
+
             client.on('PlaylistsChanged',updatePlaylists);
 
             client.on('DataLoaded', updateFiles);
@@ -272,6 +274,29 @@ var UI = (function(){
         while(UI.onChange.state.length > 0){
             UI.onChange.state.shift()();
         }
+    }
+
+    /**
+     * update our UI for outputs
+     */
+    function updateOutputs(outputs, client){
+        $('.MPD_outputs').empty();
+        outputs.forEach(function(output){
+            var contents = $($('#template_OUTPUT').html());
+            contents.attr('data-output_id', output.getId());
+            contents.find('.OUTPUT_name').html(output.getName());
+            if(output.isEnabled()){
+                contents.addClass('selected');
+                contents.find('.OUTPUT_enabled').html('Yes');
+                contents.find('.OUTPUT_enabled').addClass('good');
+            }
+            else{
+                contents.removeClass('selected');
+                contents.find('.OUTPUT_enabled').html('No');
+                contents.find('.OUTPUT_enabled').addClass('bad');
+            }
+            $('.MPD_outputs').append(contents);
+        });
     }
 
     /**
@@ -669,6 +694,20 @@ var UI = (function(){
         mpd_client.removeSongsFromQueueById(mpd_client.getCurrentSongID());
     }
 
+    /**
+     * scrolls the queue to the currently playing song
+     */
+    function showCurrenSong(element){
+        var mpd_client = getClient();
+        var song_id = mpd_client.getCurrentSongID();
+
+        var queue_element = $('.MPD_queue .LIST_content_container');
+        var song_element = $('.MPD_queue .LIST_content_container [data-mpd_queue_song_id='+song_id+']');
+
+        queue_element.animate({
+            scrollTop: queue_element.scrollTop() + song_element.position().top - queue_element.height()/2
+        }, 500);
+    }
 
     /**
      * emptys all songs from the play queue
@@ -1091,6 +1130,43 @@ var UI = (function(){
         }
     }
 
+    /**
+     * turn this output on, and all the others off
+     */
+    function switchToOutput(element){
+        var output_id = $(element).closest('[data-output_id]').data('output_id');
+
+        var outputs = getClient().getOutputs();
+        outputs.forEach(function(output){
+            if(output_id === output.getId()){
+                output.enable();
+            }
+        });
+        outputs.forEach(function(output){
+            if(output_id !== output.getId()){
+                output.disable();
+            }
+        });
+    }
+
+    /**
+     * turn on this output
+     */
+    function enableOutput(element){
+        var output_id = $(element).closest('[data-output_id]').data('output_id');
+        var output = getClient().getOutputs()[output_id];
+        output.enable();
+    }
+
+    /**
+     * turn off this output
+     */
+    function disableOutput(element){
+        var output_id = $(element).closest('[data-output_id]').data('output_id');
+        var output = getClient().getOutputs()[output_id];
+        output.disable();
+    }
+
     return {
         play:play,
         pause:pause,
@@ -1103,6 +1179,7 @@ var UI = (function(){
         loadPlaylist:loadPlaylist,
         selectPlaylist:selectPlaylist,
         removeCurrentQueueSong:removeCurrentQueueSong,
+        showCurrenSong:showCurrenSong,
         clearQueue:clearQueue,
         fileListClick:fileListClick,
         removeQueueSong:removeQueueSong,
@@ -1125,6 +1202,9 @@ var UI = (function(){
         expandSearch:expandSearch,
         collapseSearch:collapseSearch,
         removeCurrenSong:removeCurrenSong,
-        selectInstance:selectInstance
+        selectInstance:selectInstance,
+        switchToOutput:switchToOutput,
+        enableOutput:enableOutput,
+        disableOutput:disableOutput
     };
 })();

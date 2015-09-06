@@ -8,6 +8,13 @@ colors
 5 #38912F
 */
 
+.good{
+    color:#00FF00;
+}
+
+.bad{
+    color:#FF0000;
+}
 
 select{
     background-color: #C5D1C3;
@@ -111,4 +118,14 @@ input{
 
 .SEARCH_control {
     background-color: #C5D1C3;
+}
+
+/**********\
+|* output *|
+\**********/
+
+.OUTPUT_output{
+    border-color: #38912F;
+    border-image-slice: 1;
+    background: linear-gradient(135deg, #7BA777 0%, #9FBA9C 120%);
 }

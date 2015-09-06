@@ -45,6 +45,12 @@
     padding-left: 2em;
 }
 
+.LIST_song_toolbar .LIST_show_current{
+    background-position: left center;
+    padding-left: 2em;
+    background-image:  url(../img/eye.svg);
+}
+
 .LIST_song_title{
     cursor: pointer;
     text-decoration: underline;
