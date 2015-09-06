@@ -2,6 +2,11 @@
 |* settings *|
 \************/
 
+[data-tab_page=settings].TAB_page{
+    overflow-y: auto;
+    height: 0;
+}
+
 .MPD_setting{
     margin-left:2em;
     font-size: :2em;

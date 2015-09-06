@@ -13,6 +13,7 @@
     display: inline-block;
     margin: 0 0 0 1em;
     cursor: pointer;
+    font-size: .75em;
 }
 
 .OUTPUT_output .OUTPUT_switch_to{
