@@ -48,11 +48,6 @@ function MPD(_port, _host){
             ret.current_queue = _private.state.current_queue.clone();
         }
 
-        ret.playlists = [];
-        _private.state.playlists.forEach(function(playlist){
-            ret.playlists.push(playlist.clone());
-        });
-
         return ret;
     };
 
@@ -272,8 +267,10 @@ function MPD(_port, _host){
         var ret = null;
         for(var i = 0; i<_private.state.playlists.length; i++){
             if(_private.state.playlists[i].playlist==name){
-                idleHandler.postIdle = getPlaylistHandler(onDone, i);
-                issueCommand('listplaylistinfo "'+name+'"');
+                issueCommands({
+                    command:'listplaylistinfo "'+name+'"',
+                    handler:getPlaylistHandler(onDone, i)
+                });
                 return;
             }
         };
@@ -322,7 +319,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.enableOutput = function(id){
-        issueCommand('enableoutput '+id);
+        issueCommands('enableoutput '+id);
     };
 
     /**
@@ -331,7 +328,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.disableOutput = function(id){
-        issueCommand('disableoutput '+id);
+        issueCommands('disableoutput '+id);
     };
 
     /**
@@ -339,7 +336,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.enablePlayConsume = function(){
-        issueCommand('consume 1');
+        issueCommands('consume 1');
     };
 
     /**
@@ -347,7 +344,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.disablePlayConsume = function(){
-        issueCommand('consume 0');
+        issueCommands('consume 0');
     };
 
     /**
@@ -356,7 +353,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.setCrossfade = function(time) {
-        issueCommand('crossfade '+time);
+        issueCommands('crossfade '+time);
     };
 
     /**
@@ -364,7 +361,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.enableRandomPlay = function(){
-        issueCommand('random 1');
+        issueCommands('random 1');
     };
 
     /**
@@ -372,7 +369,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.disableRandomPlay = function(){
-        issueCommand('random 0');
+        issueCommands('random 0');
     };
 
     /**
@@ -380,7 +377,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.enableRepeatPlay = function(){
-        issueCommand('repeat 1');
+        issueCommands('repeat 1');
     };
 
     /**
@@ -388,7 +385,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.disableRepeatPlay = function(){
-        issueCommand('repeat 0');
+        issueCommands('repeat 0');
     };
 
     /**
@@ -396,7 +393,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.enableSinglePlay = function(){
-        issueCommand('single 1');
+        issueCommands('single 1');
     };
 
     /**
@@ -404,7 +401,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.disableSinglePlay = function(){
-        issueCommand('single 0');
+        issueCommands('single 0');
     };
 
     /**
@@ -413,7 +410,7 @@ function MPD(_port, _host){
      * @param {Float} decibels
      */
     self.setMixRampDb = function(decibels){
-        issueCommand('mixrampdb '+decibels);
+        issueCommands('mixrampdb '+decibels);
     };
 
     /**
@@ -422,7 +419,7 @@ function MPD(_port, _host){
      * @param {(float|string)} seconds - time in seconds or "nan" to disable
      */
     self.setMixRampDelay = function(seconds){
-        issueCommand('mixrampdelay '+seconds);
+        issueCommands('mixrampdelay '+seconds);
     };
 
     /**
@@ -433,7 +430,7 @@ function MPD(_port, _host){
     self.setVolume = function(volume){
         volume = Math.min(1,volume);
         volume = Math.max(0,volume);
-        issueCommand('setvol '+Math.round(volume*100));
+        issueCommands('setvol '+Math.round(volume*100));
     };
 
     /**
@@ -443,10 +440,10 @@ function MPD(_port, _host){
      */
     self.play = function(queue_position){
         if(typeof queue_position != 'undefined'){
-            issueCommand('play '+queue_position);
+            issueCommands('play '+queue_position);
         }
         else{
-            issueCommand('play');
+            issueCommands('play');
         }
     };
 
@@ -456,7 +453,7 @@ function MPD(_port, _host){
      * @param {Integer} song_id - the queue id of the song you want to start playing
      */
     self.playById = function(song_id){
-        issueCommand('playid '+song_id);
+        issueCommands('playid '+song_id);
     };
 
     /**
@@ -466,10 +463,10 @@ function MPD(_port, _host){
      */
     self.pause = function(do_pause){
         if(typeof do_pause == 'undefined' || do_pause){
-            issueCommand('pause 1');
+            issueCommands('pause 1');
         }
         else{
-            issueCommand('pause 0');
+            issueCommands('pause 0');
         }
     };
 
@@ -478,7 +475,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.next = function(){
-        issueCommand('next');
+        issueCommands('next');
     };
 
     /**
@@ -486,7 +483,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.previous = function(){
-        issueCommand('previous');
+        issueCommands('previous');
     };
 
     /**
@@ -495,7 +492,7 @@ function MPD(_port, _host){
      * @param {(float|string)} - what point in the current song to seek to or string with a signed float in it for relative seeking. i.e. "+0.1" to seek 0.1 seconds into the future, "-0.1" to seek 0.1 seconds into the past
      */
     self.seek = function(time){
-        issueCommand('seekid '+_private.state.current_song.id+' '+time);
+        issueCommands('seekid '+_private.state.current_song.id+' '+time);
     };
 
     /**
@@ -503,7 +500,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.stop = function(){
-        issueCommand('stop');
+        issueCommands('stop');
     };
 
     /**
@@ -512,7 +509,7 @@ function MPD(_port, _host){
      * @param {String} pathname - of a single file or directory. relative to MPD's mussic root directory
      */
     self.addSongToQueueByFile = function(filename){
-        issueCommand('add "'+filename+'"');
+        issueCommands('add "'+filename+'"');
     };
 
     /**
@@ -520,7 +517,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.clearQueue = function(){
-        issueCommand('clear');
+        issueCommands('clear');
     };
 
     /**
@@ -529,7 +526,7 @@ function MPD(_port, _host){
      * @param {Integer} position - index into the queue to the song you don't want to be on the queue any more
      */
     self.removeSongFromQueueByPosition = function(position){
-        issueCommand('delete '+position);
+        issueCommands('delete '+position);
     };
 
     /**
@@ -539,7 +536,7 @@ function MPD(_port, _host){
      * @param {Integer} end - the queue index of the last song on the playlist you want to remove
      */
     self.removeSongsFromQueueByRange = function(start, end){
-        issueCommand('delete '+start+' '+end);
+        issueCommands('delete '+start+' '+end);
     };
 
     /**
@@ -548,7 +545,7 @@ function MPD(_port, _host){
      * @param {Integer} id - the queue id of the song you want to remove from the queue
      */
     self.removeSongFromQueueById = function(id){
-        issueCommand('deleteid '+id);
+        issueCommands('deleteid '+id);
     };
 
     /**
@@ -558,7 +555,7 @@ function MPD(_port, _host){
      * @param {Integer} to - where you want the sang to go
      */
     self.moveSongOnQueueByPosition = function(position, to){
-        issueCommand('move '+position+' '+to);
+        issueCommands('move '+position+' '+to);
     };
 
     /**
@@ -569,7 +566,7 @@ function MPD(_port, _host){
      * @param {Integer} to - the queue index were the first song should end up
      */
     self.moveSongsOnQueueByPosition = function(start, end, to){
-        issueCommand('move '+start+':'+end+' '+to);
+        issueCommands('move '+start+':'+end+' '+to);
     };
 
     /**
@@ -579,7 +576,7 @@ function MPD(_port, _host){
      * @param {Integer} to - the queue indes you want it to be
      */
     self.moveSongOnQueueById = function(id, to){
-        issueCommand('moveid '+id+' '+to);
+        issueCommands('moveid '+id+' '+to);
     };
 
     /**
@@ -587,7 +584,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.shuffleQueue = function(){
-        issueCommand('shuffle');
+        issueCommands('shuffle');
     };
 
     /**
@@ -597,7 +594,7 @@ function MPD(_port, _host){
      * @param {Integer} pos2 - queue index of the second song
      */
     self.swapSongsOnQueueByPosition = function(pos1, pos2){
-        issueCommand('swap '+pos1+' '+pos2);
+        issueCommands('swap '+pos1+' '+pos2);
     };
 
     /**
@@ -607,7 +604,7 @@ function MPD(_port, _host){
      * @param {Integer} id2 - queue id of the second song
      */
     self.swapSongsOnQueueById = function(id1, id2){
-        issueCommand('swapid '+id1+' '+id2);
+        issueCommands('swapid '+id1+' '+id2);
     };
 
     /**
@@ -616,7 +613,7 @@ function MPD(_port, _host){
      * @param {String} playlist_name - the name of the playlist you want to append to the queue
      */
     self.appendPlaylistToQueue = function(playlist_name){
-        issueCommand('load "'+playlist_name+'"');
+        issueCommands('load "'+playlist_name+'"');
     };
 
     /**
@@ -625,8 +622,10 @@ function MPD(_port, _host){
      * @param {String} playlist_name - the name of the playlist you want to append to the queue
      */
     self.loadPlaylistIntoQueue = function(playlist_name){
-        issueCommand('clear');
-        issueCommand('load "'+playlist_name+'"');
+        issueCommands([
+            'clear',
+            'load "'+playlist_name+'"'
+        ]);
     };
 
     /**
@@ -635,7 +634,7 @@ function MPD(_port, _host){
      * @param {String} playlist_name - the name of the playlist you want to use as your new queue
      */
     self.saveQueueToPlaylist = function(playlist_name){
-        issueCommand('save "'+playlist_name+'"');
+        issueCommands('save "'+playlist_name+'"');
     };
 
     /**
@@ -645,7 +644,7 @@ function MPD(_port, _host){
      * @param {String} filename - the filename of the song you want to add
      */
     self.addSongToPlaylistByFile = function(playlist_name, filename){
-        issueCommand('playlistadd "'+playlist_name+'" "'+filename+'"');
+        issueCommands('playlistadd "'+playlist_name+'" "'+filename+'"');
     };
 
     /**
@@ -654,7 +653,7 @@ function MPD(_port, _host){
      * @param {String} playlist_name - the poor unfortunate playlist you want to hollow out
      */
     self.clearPlaylist = function(playlist_name){
-        issueCommand('playlistclear "'+playlist_name+'"');
+        issueCommands('playlistclear "'+playlist_name+'"');
     };
 
     /**
@@ -664,7 +663,7 @@ function MPD(_port, _host){
      * @param {Integer} position - the position in the playlist of the song you want to remove
      */
     self.removeSongFromPlaylistByPosition = function(playlist_name, position){
-        issueCommand('playlistdelete "'+playlist_name+'" '+position);
+        issueCommands('playlistdelete "'+playlist_name+'" '+position);
     };
 
     /**
@@ -675,7 +674,7 @@ function MPD(_port, _host){
      * @param {Integer} to - the position to which you want to move the song
      */
     self.moveSongOnPlaylistByPosition = function(playlist_name, from, to){
-        issueCommand('playlistmove "'+playlist_name+'" '+from+' '+to);
+        issueCommands('playlistmove "'+playlist_name+'" '+from+' '+to);
     };
 
     /**
@@ -685,7 +684,7 @@ function MPD(_port, _host){
      * @param {String} new_name - the name it should be
      */
     self.renamePlaylist = function(playlist_name, new_name){
-        issueCommand('rename "'+playlist_name+'" "'+new_name+'"');
+        issueCommands('rename "'+playlist_name+'" "'+new_name+'"');
     };
 
     /**
@@ -694,7 +693,7 @@ function MPD(_port, _host){
      * @param {String} playlist_name - the name of the playlist you want to obliterate and never see any trace of again
      */
     self.deletePlaylist = function(playlist_name){
-        issueCommand('rm "'+playlist_name+'"');
+        issueCommands('rm "'+playlist_name+'"');
     };
 
     /**
@@ -702,7 +701,7 @@ function MPD(_port, _host){
      * @instance
      */
     self.updateDatabase = function(){
-        issueCommand('update');
+        issueCommands('update');
     };
 
     /**
@@ -711,8 +710,10 @@ function MPD(_port, _host){
      * @param {directoryContentsCallback}
      */
     self.getDirectoryContents = function(path, onDone){
-        idleHandler.postIdle = getDirectoryHandler(onDone);
-        issueCommand('lsinfo "'+path+'"');
+        issueCommands({
+            command:'lsinfo "'+path+'"',
+            handler:getDirectoryHandler(onDone)
+        });
     };
 
     /**
@@ -748,8 +749,10 @@ function MPD(_port, _host){
            var value = params[key];
            query += ' '+key+' "'+value+'"';
        }
-       idleHandler.postIdle = getTagSearchHandler(onDone, tag_type);
-       issueCommand(query);
+       issueCommands({
+           command:query,
+           handler:getTagSearchHandler(onDone, tag_type)
+       });
    };
 
     /**
@@ -764,8 +767,10 @@ function MPD(_port, _host){
              var value = params[key];
              query += ' '+key+' "'+value+'"';
          }
-         idleHandler.postIdle = getSearchHandler(onDone);
-         issueCommand(query);
+         issueCommands({
+             command:query,
+             handler:getSearchHandler(onDone)
+         });
      };
 
     /**
@@ -781,10 +786,12 @@ function MPD(_port, _host){
             var value = params[key];
             query += ' '+key+' "'+value+'"';
         }
-        idleHandler.postIdle = getSearchHandler(function(results){
-            onDone(results[0]);
+        issueCommands({
+            command:query,
+            handler:getSearchHandler(function(results){
+                onDone(results[0]);
+            })
         });
-        issueCommand(query);
     };
 
    /****************\
@@ -797,6 +804,26 @@ function MPD(_port, _host){
       * @private
       */
      socket:null,
+
+     /**
+      * running string of partial responces from MPD
+      */
+     raw_buffer:'',
+
+     /**
+      * running list of lines we have gotten from the server
+      */
+     raw_lines:[],
+
+     /**
+      * false if we are disconnected or have not completed out initial data load yet
+      */
+     inited: false,
+
+     /**
+      * events that have been held until we are consistent
+      */
+     queued_events:[],
 
      /**
       * object {string:[function]} -- listing of funcitons to call when certain events happen
@@ -812,17 +839,6 @@ function MPD(_port, _host){
       * @private
       */
      handlers:{},
-
-     /**
-      * basically the same as above, but private and imutable and it's just a single function
-      * called before the external handlers so they can screw with the event if they want
-      * @private
-      */
-     internal_handlers:{
-       onConnect:onConnect,
-       onDisconnect:onDisconnect,
-       onStateChanged:onStateChanged
-     },
 
      /**
       * number -- int number of milisecond to wait until reconnecting after loosing connection
@@ -911,20 +927,20 @@ function MPD(_port, _host){
      last_status_update_time: new Date(),
 
      /**
-      * current processing method
-      * called when ever we get some sort of responce
-      * this gets changed as our expected responces changed
-      * accepts an array WHICH IT WILL CHANGE eventually,
-      * when the lines have comprised a complete command
-      * this method may change it's self, so after calling this method,
-      * this reference might point to a different method
-      * defaults to do nothing
-      *
-      * understanding this variable is essential for understanding how this package works
-      * this is basically a changable behaviour method
+      *method called when we get a responce from MPD
+      */
+     responceProcessor:null,
+
+     /**
+      * sequence of handlers for the sequence of commands that have been issued
       * @private
       */
-     responceProcessor:function(lines){}
+     commandHandlers:[],
+
+     /**
+      * commands that are yet to be processed
+      */
+     command_queue:[]
    };
 
 
@@ -932,15 +948,9 @@ function MPD(_port, _host){
     |* private methods *|
     \*******************/
 
-    /**
-     * logging function
-     * @private
-     */
-    function log(message){
-      if(_private.do_logging){
-        console.log("MPD Client: "+message);
-      }
-    }
+    /*************************\
+    |* connection management *|
+    \*************************/
 
     /**
      * wrapper for sending a message to the server, allows logging
@@ -954,7 +964,7 @@ function MPD(_port, _host){
 
     /**
      * initalization funciton
-     * called near the end of this file and when we need to reconnect
+     * called near the end of this file and when we need to (try to) (re)connect
      * @private
      */
     function init(){
@@ -963,110 +973,16 @@ function MPD(_port, _host){
       websocket.open(websocket_url);
 
       //these can throw
-      websocket.on(
-          'open',
-          function(){
-              callHandler('Connect', arguments);
-          }
-      );
-      websocket.on('message', onRawData);
-      websocket.on(
-          'close',
-          function(){
-              callHandler('Disconnect', arguments);
-          }
-      );
+      websocket.on('open',onConnect);
+
+      websocket.on('message', function(){
+          _private.responceProcessor.apply(this,arguments);
+      });
+
+      websocket.on('close',onDisconnect);
+
       _private.socket = websocket;
     }
-
-
-    /**
-     * issue a command to the server
-     * this assumes we are starting in and wish to return to an idle state
-     * @private
-     */
-    function issueCommand(command){
-        if(!issueCommand.command){
-            issueCommand.command = command+'\n';
-
-            setTimeout(function(){
-                sendString('noidle\n'+issueCommand.command+'idle\n');
-                delete issueCommand.command;
-            },50);
-        }
-        else{
-            //append additional commands
-            issueCommand.command += command+'\n';
-        }
-    }
-
-
-    /**
-     * private method that gets the right websocket URL
-     * @private
-     */
-    function getAppropriateWsUrl()
-    {
-      var protocol = '';
-      var url = _host;
-      if(typeof url === 'undefined'){
-          //change the url so it points to the root
-          _host = url = document.URL.replace(/((?:https?:\/\/)?[^\/]+).*/, '$1');
-      }
-
-      /*
-       * We open the websocket encrypted if this page came on an
-       * https:// url itself, otherwise unencrypted
-       */
-
-      //figure out protocol to use
-      if(url.substring(0, 5) == "https"){
-          protocol = "wss://";
-          url = url.substr(8);
-      }
-      if(url.substring(0, 3) == "wss"){
-          protocol = "wss://";
-          url = url.substr(6);
-      }
-      else{
-          protocol = "ws://";
-          url = url.replace(/^\w+:\/\//, '');
-      }
-
-      url = protocol+url;
-
-      if(_port){
-        //use the port this client was initialized with
-        url = url.replace(/:\d*$/,'')+':'+_port;
-      }
-
-      return url;
-    }
-
-
-    /**
-     * converts an string to a Date
-     * @private
-     */
-    function parseDate(source){
-        var value = null;
-        var matches = null;
-        if(matches = source.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z/)){
-            value = new Date();
-            value.setFullYear(parseInt(matches[1],10));
-            value.setMonth(parseInt(matches[2],10)-1);
-            value.setDate(parseInt(matches[3],10));
-            value.setHours(parseInt(matches[4],10));
-            value.setMinutes(parseInt(matches[5],10));
-            value.setSeconds(parseInt(matches[6],10));
-        }
-        return value;
-    }
-
-
-    /***************************\
-    |* internal event handlers *|
-    \***************************/
 
 
     /**
@@ -1074,9 +990,12 @@ function MPD(_port, _host){
      * @private
      */
     function onConnect(){
-      log("connected");
-      _private.state.connected = true;
-      _private.responceProcessor = handleConnectionMessage;
+        log("connected");
+        _private.state.connected = true;
+        _private.raw_buffer = '';
+        _private.raw_lines = [];
+        _private.responceProcessor = handleConnectionMessage;
+        callHandler('Connected', arguments);
     }
 
 
@@ -1085,156 +1004,144 @@ function MPD(_port, _host){
      * @private
      */
     function onDisconnect(){
-      log("disconnected");
+        log("disconnected");
 
-      _private.state.connected = false;
-      _private.socket = null;
-      _private.state.version = null;
+        _private.state.connected = false;
+        _private.socket = null;
+        _private.state.version = null;
+        setInited(false);
 
-      if(_private.reconnect_time){
-        setTimeout(init, _private.reconnect_time);
-      }
+        _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
 
-      _private.responceProcessor = function(){};//do nothing
+        if(_private.reconnect_time){
+            setTimeout(init, _private.reconnect_time);
+        }
+
+        callHandler('Disconnect', arguments);
     }
 
 
     /**
-     * called when we have some data,
-     * might be a message,
-     * might be a fragment of a message,
-     * might be multiple messages
-     * @private
+     * change the state and deal with what happens when that state changes
      */
-    function onRawData(){
-        if(typeof onRawData.buffer === 'undefined'){
-            onRawData.buffer = '';
-            onRawData.lines = [];
-        }
-        onRawData.buffer += _private.socket.rQshiftStr();
-        var lines = onRawData.buffer.split('\n');
-        onRawData.buffer = lines.pop(); //last line is incomplete
-        onRawData.lines = onRawData.lines.concat(lines);
-
-        lines.forEach(function(str){log('recived: "'+str+'"');});
-
-        //keep processing untill we can't process any more
-        var old_lines;
-        while(onRawData.lines.length && old_lines != onRawData.lines.length){
-            old_lines = onRawData.lines.length;
-            _private.responceProcessor(onRawData.lines);
-        }
-    }
-
-
-    /**
-     * the MPD server's state changed in some way
-     * this handler mainly mangles the raw data to be in a format I like better
-     * because of course I know better than the MPD maintainer what things should be called and the ranges things should be in
-     * @private
-     */
-    function onStateChanged(event){
-        log('state');
-
-        _private.last_status_update_time = new Date();
-
-        //normalize some of the event properties because I don't like them the way they are
-        event.current_song = {
-            queue_idx: event.song,
-            elapsed_time: event.elapsed,
-            id: event.songid
-        };
-        delete event.song;
-        delete event.elapsed;
-        delete event.songid;
-
-        event.mix_ramp_threshold = event.mixrampdb;
-        event.playstate = event.state;
-        event.queue_version = event.playlist;
-        event.crossfade = (typeof event.xfade === 'undefined')?0:event.xfade;
-        delete event.mixrampdb;
-        delete event.state;
-        delete event.playlist;
-        delete event.xfade;
-
-        event.next_song = {
-            queue_idx: event.nextsong,
-            id: event.nextsongid
-        };
-        delete event.nextsong;
-        delete event.nextsongid;
-
-        event.volume /= 100;
-
-        for(property in event){
-            _private.state[property] = event[property];
-        }
-    }
-
-
-    /**
-     * call all event handlers for the specified event
-     * @private
-     */
-    function callHandler(event_name, args){
-        var handler_name = 'on'+event_name;
-
-        if(_private.internal_handlers[handler_name]){
-            _private.internal_handlers[handler_name](args);
-        }
-
-        if(!_private.handlers[handler_name]){
-            handler_name = 'onUnhandledEvent';
-        }
-
-        if(_private.handlers[handler_name]){
-            _private.handlers[handler_name].forEach(function(func){
-                try{
-                    //put in a timeout so our current execution finishesand we aren't in a half formed state when client code reacts to the event
-                    setTimeout(function(){
-                        func(args, self);
-                    }, 50);
-                }
-                catch(err){
-                    dealWithError(err);
+    function setInited(inited){
+        _private.inited = inited;
+        if(inited){
+            var events = _private.queued_events;
+            _private.queued_events = [];
+            events.forEach(function(event){
+                for(var key in event){
+                    callHandler(key, event[key]);
                 }
             });
         }
+    }
 
-        if(event_name !== 'Event'){
-            callHandler('Event', {type:event_name, data:event.data});
+
+    /************\
+    |* commands *|
+    \************/
+
+
+    /**
+     * issue one or more commands to the server
+     * pass one command or an array of commands
+     * a command can be in the form of a string, or a object
+     * if a string is used as a command it will be assumed to have a 'do nothing' responce handler
+     * if an object is passed it must be in the form of {command:<String>, handler:function(String[])}
+     * this assumes we are starting in and wish to return to an idle state
+     * @private
+     */
+    function issueCommands(commands, is_idling){
+        if( Object.prototype.toString.call( commands ) !== '[object Array]' ) {
+            //some joker didn't give us a set of commands... wrap it up
+            commands = [commands];
+        }
+
+        if(_private.command_queue.length === 0){
+            _private.command_queue = commands;
+            //done in a timeout so we can combine commands effecently
+            setTimeout(function(){
+                processComandQueue(is_idling === false);
+            }, 50);
+        }
+        else{
+            //append additional commands, they'll get processed when the above command is done
+            _private.command_queue.push.apply(_private.command_queue, commands);
         }
     }
 
 
     /**
-     * add an event handler
-     * @private
+     * get the next command off the queue and process it
      */
-    function on(event_name, handler){
+    function processComandQueue(is_not_idling){
+        var command_string = '';
 
-        var acceptable_handlers = ['Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'StateChanged', 'OutputChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'];
-
-        if(acceptable_handlers.indexOf(event_name) === -1){
-            throw new Error("'"+event_name+"' is not a supported event");
+        if(_private.commandHandlers.length > 0 && _private.commandHandlers[0] !== idleHandler){
+            //there are outstatnding commands being processed still, wait until the last batch finishes
+            //we don't have to timeout call ourself because we will be called when the outstanding commands are done
+            //if we are waiting on the idle handler then this doesn't count
+            return;
         }
 
+        _private.command_queue.forEach(function(command){
+            if(command instanceof Function){
+                command.post_command_function = true;
+                //if we are given a function, it will be called when all previous commands are complete
+                _private.commandHandlers.push(command);
+            }
+            else{
+                //normal case
 
-        //bind the passed method to the client interface
-        handler = handler.bind(self);
+                //if it's a string make it be an object
+                if(typeof command === 'string'){
+                    command = {command:command}; //malkovich
+                }
 
-        var handler_name = 'on'+event_name;
-        if(_private.handlers[handler_name]){
-            _private.handlers[handler_name].push(handler);
+                //if it doesn't have a handler give it a 'do nothing' handler
+                if(typeof command.handler === 'undefined'){
+                    command.handler = function(){};
+                }
+
+                //now everything is normalized
+
+                //append the command
+                command_string += command.command+'\n';
+
+                //set the handler
+                _private.commandHandlers.push(command.handler);
+            }
+        });
+        _private.command_queue = [];
+
+        //issue the command
+        if('' === command_string){
+            //if we were given nothing but post comand functions don't issue a null command
+            //but do call all of those post comand functions
+            _private.commandHandlers.forEach(function(func){
+                //this whole branch is weird, so lets just check to make sure these are all post comand functions
+                if(!func.post_command_function){
+                    throw new Error('non-"post comand" function in commandHandlers when there was no command!');
+                }
+                func();
+            });
         }
         else{
-            _private.handlers[handler_name] = [handler];
+            _private.commandHandlers.push(idleHandler);
+
+            command_string = 'command_list_ok_begin\n'+command_string+'idle\ncommand_list_end\n';
+            if(!is_not_idling){
+                command_string = 'noidle\n'+command_string;
+            }
+
+            sendString(command_string);
         }
     }
 
+
     /*************************************\
     |* process responces from the server *|
-    |*          generates events         *|
     \*************************************/
 
 
@@ -1258,7 +1165,7 @@ function MPD(_port, _host){
         var end_line = -1;
         for(var i = 0; i<lines.length; i++){
             var line = lines[i];
-            if(line === last_line){
+            if(line.match(last_line)){
                 end_line = i;
                 break;
             }
@@ -1333,70 +1240,295 @@ function MPD(_port, _host){
 
 
     /**
-     * generic handler for loading a list of records in a responce
+     *fetch outstanding lines from MPD
+     */
+    function getRawLines(){
+        _private.raw_buffer += _private.socket.rQshiftStr();//get the raw string
+
+        var lines = _private.raw_buffer.split('\n');//split that into lines
+
+        _private.raw_buffer = lines.pop(); //last line is incomplete
+
+        _private.raw_lines.push.apply(_private.raw_lines,lines); //append these new lines to the running collection we have
+
+        lines.forEach(function(str){log('recived: "'+str+'"');}); //log what we got
+
+        return _private.raw_lines;
+    }
+
+
+    /**
+     * called when we have some data,
+     * might be a message,
+     * might be a fragment of a message,
+     * might be multiple messages
      * @private
      */
-    function getlistHandler(onDone, event_type, new_file_marker, transformFunction){
+    function onRawData(){
+        var lines = getRawLines();
+        //keep processing untill we can't process any more
+        var old_lines;//this is infinite loop prevention, should never actually happen
+        while(lines.length > 0 && old_lines != lines.length){
+            old_lines = lines.length;
+
+            var command_lines = getLines(lines, /^OK$|^list_OK$/);//get everything until the 'OK' line
+            if(command_lines === null){
+                //we have hit the end of the useable lines
+                break;
+            }
+            command_lines.pop(); //get rid of the 'OK'
+
+            command_processor = _private.commandHandlers.shift(); //get the next outstanding command processor
+
+            command_processor(command_lines); //execure the processor on the results of the command
+
+            //call everything we are supposed to just call
+            while(_private.commandHandlers.length > 0 && _private.commandHandlers[0].post_command_function){
+                _private.commandHandlers.shift()();
+            }
+        }
+
+        //if there are no commandHandlers left, we have definitely exauhsted our outstanding commands
+        //if there is something in the command_queue, we have another batch of commands to issue
+        //so process them
+        if(_private.commandHandlers.length === 0 && _private.command_queue > 0){
+            processComandQueue();
+        }
+    }
+
+
+    /**
+     * we are expecting a connection responce
+     * this handles raw data because when we first connect the protocol is comepletely different than at any other point
+     * @private
+     */
+    function handleConnectionMessage(){
+        var lines = getRawLines();
+
+        if(lines.length < 1){
+            return;
+        }
+
+        var line = lines.shift(1);
+
+        _private.state.version = line.replace(/^OK MPD /, '');
+
+        _private.responceProcessor = onRawData;
+
+        //issue the commands that will (re)init this object
+        loadEverything();
+    }
+
+    /********************\
+    |* command handlers *|
+    \********************/
+
+    /**
+     * handles the 'tagtypes' command
+     */
+    function tagHandler(lines){
+        var tag_types = processListResponce(lines);
+        _private.tag_types = ['any'].concat(
+            tag_types.map(function(tagtype){
+                return tagtype.tagtype.toLowerCase();
+            })
+        );
+    }
+
+    /**
+     * deal with the result of the 'outputs' command
+     */
+    function outputHandler(lines){
+        _private.outputs = processListResponce(lines);
+
+        callHandler('OutputChanged',self.getOutputs());
+    }
+
+    /**
+     * handle the responce from the 'status' command
+     * @private
+     */
+    function stateHandler(lines){
+
+        //update this so playtime is calculated accurately
+        _private.last_status_update_time = new Date();
+
+        log('state');
+
+        //convert the lines into an object
+        var state = {};
+        lines.forEach(function(line){
+            var key = line.replace(/([^:]+): (.*)/,'$1');
+            var value = line.replace(/([^:]+): (.*)/,'$2');
+            if(value.match(/^\d*(\.\d*)?$/)){
+                value = parseFloat(value);
+            }
+            state[key] = value;
+        });
+
+        //normalize some of the state properties because I don't like them the way they are
+        //because of course I know better than the MPD maintainers what things should be called and the ranges things should be in
+        state.current_song = {
+            queue_idx: state.song,
+            elapsed_time: state.elapsed,
+            id: state.songid
+        };
+        delete state.song;
+        delete state.elapsed;
+        delete state.songid;
+
+        state.mix_ramp_threshold = state.mixrampdb;
+        state.playstate = state.state;
+        state.queue_version = state.playlist;
+        state.crossfade = (typeof state.xfade === 'undefined')?0:state.xfade;
+        delete state.mixrampdb;
+        delete state.state;
+        delete state.playlist;
+        delete state.xfade;
+
+        state.next_song = {
+            queue_idx: state.nextsong,
+            id: state.nextsongid
+        };
+        delete state.nextsong;
+        delete state.nextsongid;
+
+        state.volume /= 100;
+
+        for(property in state){
+            _private.state[property] = state[property];
+        }
+
+        callHandler('StateChanged',self.getState());
+    }
+
+
+    /**
+     * handler for the current queue
+     * @private
+     */
+    function queueHandler(lines){
+        var queue_songs = processListResponce(lines);
+
+        var source = { songs: queue_songs.map(
+            function(song){
+                return MPD.QueueSong(self,song);
+            }
+        )};
+
+        _private.state.current_queue = MPD.Queue(self, source);
+
+        callHandler('QueueChanged',self.getQueue());
+    }
+
+
+    /**
+     * handler for the list of playlists
+     * @private
+     */
+    function playlistsHandler(lines){
+        _private.state.playlists = processListResponce(lines);
+
+        callHandler('PlaylistsChanged',self.getPlaylists());
+    }
+
+    /*\
+    | meta-handlers
+    \*/
+
+    /**
+     * get a handler wrapper for the results of a search
+     * @private
+     */
+    function getSearchHandler(onDone){
         return function(lines){
-            var message_lines = getLines(lines, 'OK');
-            if(message_lines === null){
-                return; //we got an incomplete list, bail wait for the rest of it
-            }
-            message_lines.pop();//get rid of the 'OK' line
-            if(message_lines.length > 0){
-                var list = processListResponce(message_lines, new_file_marker);
-                //optional transformation function
-                if(transformFunction){
-                    list = transformFunction(list);
-                }
-                //we have an event!
-                if(event_type){
-                    callHandler(event_type,list);
-                }
-                onDone(list);
-            }
-            else{
-                var default_responce = [];
-                if(transformFunction){
-                    default_responce = transformFunction(default_responce);
-                }
-                if(event_type){
-                    callHandler(event_type,default_responce);
-                }
-                onDone(default_responce);
-            }
+            var results = processListResponce(lines);
+            onDone(results.map(function(song){
+                return MPD.SearchSong(self,song);
+            }));
         };
     }
+
+
+    /**
+     * get a handler wrapper for the results of a tag search
+     * @private
+     */
+    function getTagSearchHandler(onDone, tag){
+        return function(lines){
+            var results = processListResponce(lines);
+            onDone(results.map(function(result){
+                return result[tag];
+            }));
+        };
+    }
+
+
+    /**
+     * handler for the list of directories
+     * @private
+     */
+    function getDirectoryHandler(onDone){
+        return function(lines){
+            var results = processListResponce(lines, /^file$|^directory$/);
+            onDone(results.map(function(file){
+                if(typeof file.file !== 'undefined'){
+                    return MPD.FileSong(self,file);
+                }
+                else{
+                    return MPD.Directory(self,file);
+                }
+            }));
+        };
+    }
+
+
+    /**
+     * handler for loading a single playlist
+     * @private
+     */
+    function getPlaylistHandler(onDone, idx){
+        return function(lines){
+            var results = processListResponce(lines);
+
+            var source = cloneObject(_private.state.playlists[idx]);
+            source.songs = results.map(function(song){
+                return MPD.PlaylistSong(self,song);
+            });
+            onDone(MPD.Playlist(self,source));
+        };
+    }
+
 
     /**
      * given a change key, return the command that will result in getting the changed data
      * @private
      */
-    function figureOutWhatToReload(change, actions){
+    function figureOutWhatToReload(change){
         switch(change){
             case 'database': //the song database has been modified after update.
                 //reload
                 //everything
-                actions.everything = true;
+                return 'everything';
             break;
 
             case 'stored_playlist': //a stored playlist has been modified, renamed, created or deleted, no idea which one
-                actions.playlist = true;
+                return 'playlist';
             break;
 
             case 'playlist': //the current playlist has been modified
-                actions.queue = true;
+                return 'queue';
             break;
 
             /*these are all status changed*/
             case 'player': //the player has been started, stopped or seeked
             case 'mixer': //the volume has been changed
             case 'options': //options like repeat, random, crossfade, replay gain
-                actions.status = true;
+                return 'status';
             break;
 
             case 'output': //an audio output has been enabled or disabled
-                actions.outputs = true;
+                return 'outputs';
             break;
 
             /*these are things I'm not interested in (yet)*/
@@ -1411,104 +1543,67 @@ function MPD(_port, _host){
         }
     }
 
+
     /**
      * wait for something to change
      * this is the state we spend most of out time in
      * @private
      */
     function idleHandler(lines){
-        var message_lines = getLines(lines, 'OK');
-        message_lines.pop();//get rid of the 'OK' line
-        if(message_lines.length > 0){
+        if(lines.length > 0){
             var actions = {};
-            message_lines.forEach(function(line){
+            lines.forEach(function(line){
                 var change = line.replace(/([^:]+): (.*)/,'$2');
-                figureOutWhatToReload(change, actions);
+                actions[figureOutWhatToReload(change)] = true;
             });
 
             if(actions.everything){
                 //don't even bother doing anything fancy
-                loadEverything();
+                loadEverything(true);
             }
             else{
-                //now we have to make this hellish patchwork of callbacks for loading all the stuff we need
+                //now we have to reload all the stuff we need
                 //in the right order
-                //I could probly just rename these and move them somewhere and this would be a lot more readable...
 
-                //this is the basic one, we should always end with this
-                function goBackToWaiting(actions){
-                    _private.responceProcessor = idleHandler;
-                    sendString('idle\n');
-                }
+                var commands = [];
 
-                //reload the statuses
-                function reloadStatus(actions){
-                    _private.responceProcessor = getStateHandler(function(){reloadStuff(actions);});
-                    sendString('status\n');
-                }
-
-                //reload the queue, the status, then go back to waiting
-                function reloadQueue(actions){
-                    _private.responceProcessor = getQueueHandler(function(){reloadStuff(actions);},'QueueChanged');
-                    sendString('playlistinfo\n');
-                }
-
-                //reload outputs, then go back to waiting
-                function reloadOutputs(actions){
-                    _private.responceProcessor = getlistHandler(function(outputs){  //loading the outputs
-                        _private.outputs = outputs;
-                        callHandler('OutputChanged',self.getOutputs());
-                        reloadStuff(actions);
+                if(actions.queue){
+                    commands.push({
+                        command:'playlistinfo',
+                        handler:queueHandler
                     });
-                    sendString('outputs\n');
+                }
+                if(actions.status){
+                    commands.push({
+                        command:'status',
+                        handler:stateHandler
+                    });
+                }
+                if(actions.outputs){
+                    commands.push({
+                        command:'outputs',
+                        handler:outputHandler
+                    });
+                    //TODO remove this hack when this bug is fixed in MPD
+                    setTimeout(function(){
+                        issueCommands({
+                            command:'status',
+                            handler:stateHandler
+                        });
+                    },500);
+                }
+                if(actions.playlist){
+                    commands.push({
+                        command:'listplaylists',
+                        handler:playlistsHandler
+                    });
                 }
 
-                function reloadStuff(actions){
-                    if(actions.queue){
-                        delete actions.queue;
-                        reloadQueue(actions);
-                    }
-                    else if(actions.status){
-                        delete actions.status;
-                        reloadStatus(actions);
-                    }
-                    else if(actions.outputs){
-                        delete actions.outputs;
-                        reloadOutputs(actions);
-                    }
-                    else if(actions.playlist){
-                        delete actions.playlist;
-                        loadAllPlaylists(goBackToWaiting);
-                    }
-                    else{
-                        goBackToWaiting(actions);
-                    }
+                if(commands.length > 0){
+                    issueCommands(commands,false);
                 }
-
-                reloadStuff(actions);
             }
         }
-        else{
-            if(idleHandler.postIdle){
-                _private.responceProcessor = idleHandler.postIdle;
-                delete idleHandler.postIdle;
-            }
-        }
-    }
-
-
-    /**
-     * we are expecting a connection responce
-     * @private
-     */
-    function handleConnectionMessage(lines){
-        if(lines.length < 1){
-            return;
-        }
-        var line = lines.shift(1);
-        _private.state.version = line.replace(/^OK MPD /, '');
-
-        loadEverything();
     }
 
 
@@ -1516,212 +1611,184 @@ function MPD(_port, _host){
      * method name says it all
      * @private
      */
-    function loadEverything(){
+    function loadEverything(reload){
+        setInited(false);
+
         //this loads all of the data from the MPD server we need
-        //it gets the queue first, then the state (because the state references the queue), then all of the playlist data
-        _private.responceProcessor = getQueueHandler(function(){    //initial load of the queue
-            _private.responceProcessor = getStateHandler(function(){    //initial load of the state
-                _private.responceProcessor = getlistHandler(function(tag_types){  //loading the tag types
-                    _private.tag_types = ['any'].concat(
-                        tag_types.map(function(tagtype){
-                            return tagtype.tagtype.toLowerCase();
-                        })
-                    );
-                    _private.responceProcessor = getlistHandler(function(outputs){  //loading the outputs
-                        _private.outputs = outputs;
-                        loadAllPlaylists(function(){
+        //it gets the queue first, then the state (because the state references the queue),
+        //then all of the other data that shouldn't change without MPD going down in no particular order
+        issueCommands(
+            [
+                {
+                    command:'playlistinfo',
+                    handler:queueHandler
+                },
+                {
+                    command:'status',
+                    handler:stateHandler
+                },
+                {
+                    command:'tagtypes',
+                    handler:tagHandler
+                },
+                {
+                    command:'outputs',
+                    handler:outputHandler
+                },
+                {
+                    command:'listplaylists',
+                    handler:playlistsHandler
+                },
+                function(){
+                    setInited(true);
+                    callHandler('DataLoaded',_private.state);
+                }
+            ],
+            reload === true
+        );
+    }
 
-                            //ok everything is loaded...
-                            //just wait for something to change and deal with it
-                            _private.responceProcessor = idleHandler;
-                            sendString('idle\n');
 
-                            callHandler('DataLoaded',_private.state);
-                        });
-                        callHandler('OutputChanged',self.getOutputs());
-                    });
-                    sendString('outputs\n');
-                });
-                sendString('tagtypes\n');
+    /**********\
+    |* events *|
+    \**********/
+
+
+    /**
+     * call all event handlers for the specified event
+     * @private
+     */
+    function callHandler(event_name, args){
+        if(!_private.inited){
+            var event_obj = {};
+            event_obj[event_name] = args;
+            _private.queued_events.push(event_obj);
+            return;
+        }
+
+        var handler_name = 'on'+event_name;
+
+        if(!_private.handlers[handler_name]){
+            handler_name = 'onUnhandledEvent';
+        }
+
+        if(_private.handlers[handler_name]){
+            _private.handlers[handler_name].forEach(function(func){
+                try{
+                    func(args, self);
+                }
+                catch(err){
+                    dealWithError(err);
+                }
             });
-            sendString('status\n');
-        }, 'QueueChanged');
+        }
 
-        //request state info, start the initial data load cascade
-        sendString('playlistinfo\n');
+        if(event_name !== 'Event'){
+            callHandler('Event', {type:event_name, data:event.data});
+        }
     }
 
 
     /**
-     * reload all playlists
+     * add an event handler
      * @private
      */
-    function loadAllPlaylists(onDone){
-        _private.responceProcessor = getPlaylistsHandler(function(){
-            //we have loaded all playlists
-            onDone();
-            callHandler('PlaylistsChanged',_private.state.playlists);
-        });
-        sendString('listplaylists\n');
+    function on(event_name, handler){
+
+        var acceptable_handlers = ['Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'StateChanged', 'OutputChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'];
+
+        if(acceptable_handlers.indexOf(event_name) === -1){
+            throw new Error("'"+event_name+"' is not a supported event");
+        }
+
+
+        //bind the passed method to the client interface
+        handler = handler.bind(self);
+
+        var handler_name = 'on'+event_name;
+        if(_private.handlers[handler_name]){
+            _private.handlers[handler_name].push(handler);
+        }
+        else{
+            _private.handlers[handler_name] = [handler];
+        }
+    }
+
+    /*******************\
+    |* utility methods *|
+    \*******************/
+
+    /**
+     * logging function
+     * @private
+     */
+    function log(message){
+      if(_private.do_logging){
+        console.log("MPD Client: "+message);
+      }
+    }
+
+    /**
+     * private method that gets the right websocket URL
+     * @private
+     */
+    function getAppropriateWsUrl()
+    {
+      var protocol = '';
+      var url = _host;
+      if(typeof url === 'undefined'){
+          //change the url so it points to the root
+          _host = url = document.URL.replace(/((?:https?:\/\/)?[^\/]+).*/, '$1');
+      }
+
+      /*
+       * We open the websocket encrypted if this page came on an
+       * https:// url itself, otherwise unencrypted
+       */
+
+      //figure out protocol to use
+      if(url.substring(0, 5) == "https"){
+          protocol = "wss://";
+          url = url.substr(8);
+      }
+      if(url.substring(0, 3) == "wss"){
+          protocol = "wss://";
+          url = url.substr(6);
+      }
+      else{
+          protocol = "ws://";
+          url = url.replace(/^\w+:\/\//, '');
+      }
+
+      url = protocol+url;
+
+      if(_port){
+        //use the port this client was initialized with
+        url = url.replace(/:\d*$/,'')+':'+_port;
+      }
+
+      return url;
     }
 
 
     /**
-     * we are expecting a state responce
-     * this is what we do when we get it
+     * converts an string to a Date
      * @private
      */
-    function getStateHandler(onDone){
-        return function(lines){
-            var message_lines = getLines(lines, 'OK');
-            message_lines.pop();//get rid of the 'OK' line
-            if(message_lines.length > 0){
-                var state = {};
-                message_lines.forEach(function(line){
-                    var key = line.replace(/([^:]+): (.*)/,'$1');
-                    var value = line.replace(/([^:]+): (.*)/,'$2');
-                    if(value.match(/^\d*(\.\d*)?$/)){
-                        value = parseFloat(value);
-                    }
-                    state[key] = value;
-                });
-                //we have a state event!
-                callHandler('StateChanged',state);
-                onDone();
-            }
-        };
+    function parseDate(source){
+        var value = null;
+        var matches = null;
+        if(matches = source.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z/)){
+            value = new Date();
+            value.setFullYear(parseInt(matches[1],10));
+            value.setMonth(parseInt(matches[2],10)-1);
+            value.setDate(parseInt(matches[3],10));
+            value.setHours(parseInt(matches[4],10));
+            value.setMinutes(parseInt(matches[5],10));
+            value.setSeconds(parseInt(matches[6],10));
+        }
+        return value;
     }
-
-
-    /**
-     * handler for the current queue
-     * @private
-     */
-    function getQueueHandler(onDone, event_type){
-        return getlistHandler(
-            function(event){
-                //update the internal state with the new queue
-                _private.state.current_queue = event;
-                onDone.apply(null, arguments);
-            },
-            event_type,
-            null,
-            function(list){
-                return MPD.Queue(
-                    self,
-                    {
-                        songs:list.map(function(song){
-                            return MPD.QueueSong(self,song);
-                        })
-                    }
-                );
-            }
-        );
-    }
-
-
-    /**
-     * handler for the list of playlists
-     * @private
-     */
-    function getPlaylistsHandler(onDone){
-        return getlistHandler(function(event){
-            _private.state.playlists = event;
-            onDone.apply(null, arguments);
-        });
-    }
-
-
-    /**
-     * get a handler wrapper for the results of a search
-     * @private
-     */
-    function getSearchHandler(onDone){
-        return getlistHandler(
-            function(){
-                onDone.apply(null, arguments);
-                _private.responceProcessor = idleHandler;
-            },
-            null,
-            null,
-            function(list){
-                return list.map(function(song){
-                    return MPD.SearchSong(self,song);
-                });
-            }
-        );
-    }
-
-
-    /**
-     * get a handler wrapper for the results of a tag search
-     * @private
-     */
-    function getTagSearchHandler(onDone, tag){
-        return getlistHandler(
-            function(){
-                onDone.apply(null, arguments);
-                _private.responceProcessor = idleHandler;
-            },
-            null,
-            null,
-            function(list){
-                return list.map(function(result){
-                    return result[tag];
-                });
-            }
-        );
-    }
-
-
-    /**
-     * handler for the list of directories (is exactly the same as the search handler :/ )
-     * @private
-     */
-    function getDirectoryHandler(onDone){
-        return getlistHandler(
-            function(){
-                onDone.apply(null, arguments);
-                _private.responceProcessor = idleHandler;
-            },
-            null,
-            /^file$|^directory$/,
-            function(list){
-                return list.map(function(file){
-                    if(typeof file.file !== 'undefined'){
-                        return MPD.FileSong(self,file);
-                    }
-                    else{
-                        return MPD.Directory(self,file);
-                    }
-                });
-            }
-        );
-    }
-
-
-    /**
-     * handler for loading a single playlist
-     * @private
-     */
-    function getPlaylistHandler(onDone, queue_idx){
-        return getlistHandler(
-            function(){
-                onDone.apply(null, arguments);
-                _private.responceProcessor = idleHandler;
-            },
-            null,
-            null,
-            function(list){
-                var source = cloneObject(_private.state.playlists[queue_idx]);
-                source.songs = list.map(function(song){
-                    return MPD.PlaylistSong(self,song);
-                });
-                return MPD.Playlist(self,source);
-            }
-        );
-    }
-
 
     /******************\
     |* public methods *|
