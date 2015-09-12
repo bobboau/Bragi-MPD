@@ -1,0 +1,16 @@
+/*************************\
+|* ie specific css fixes *|
+\*************************/
+
+_:-ms-fullscreen, :root .MPD_volume {
+    height:100%
+}
+
+_:-ms-fullscreen, :root .LIST_playlist_toolbar .MPD_button{
+    margin-top: 1.25em;
+}
+
+_:-ms-fullscreen, :root .LIST_song .LIST_song_toolbar .MPD_button{
+    min-width:0.125em;
+    width:0.125em;
+}
