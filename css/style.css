@@ -49,6 +49,21 @@ html, body{
     }
 }
 
+.MPD_disconnected{
+    position: fixed;
+    width: 100%;
+    height: calc(100% - 2em + 2px);
+    background-color: rgba(0,0,0,0.5);
+    color: red;
+    text-align: center;
+}
+
+.MPD_disconnected > *{
+    position:relative;
+    font-size: 3em;
+    top:calc(50% - 1.5em);
+}
+
 input[type=range][orient=vertical]{
     -webkit-appearance: slider-vertical;
     appearance: slider-vertical;

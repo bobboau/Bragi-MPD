@@ -995,7 +995,7 @@ function MPD(_port, _host){
         _private.raw_buffer = '';
         _private.raw_lines = [];
         _private.responceProcessor = handleConnectionMessage;
-        callHandler('Connected', arguments);
+        callHandler('Connect', arguments);
     }
 
 
@@ -1492,7 +1492,8 @@ function MPD(_port, _host){
             var results = processListResponce(lines);
 
             var source = cloneObject(_private.state.playlists[idx]);
-            source.songs = results.map(function(song){
+            source.songs = results.map(function(song, pos){
+                song.position = pos;
                 return MPD.PlaylistSong(self,song);
             });
             onDone(MPD.Playlist(self,source));
@@ -2099,7 +2100,18 @@ MPD.QueueSong = function(client, source){
  * @param {song_metadata} source - raw metadata javascript object that contains the MPD reported data for this song
  */
 MPD.PlaylistSong = function(client, source){
-    return MPD.Song(client, source);
+    var me = MPD.Song(client, source);
+
+    /**
+     * get the position of this song on the playlist
+     * @instance
+     * @returns {Integer}
+     */
+    me.getPlaylistPosition = function(){
+        return source.position;
+    }
+
+    return me;
 }
 
 /**
@@ -2283,6 +2295,16 @@ MPD.Playlist = function(client, source){
     };
     me.moveSongByPosition = function(position, to){
         client.moveSongOnPlaylistByPosition(me.getName(), position, to);
+    };
+
+    /**
+     * change the name of this playlist
+     * @instance
+     * @param {String} new_name -- the name this playlist should answer to from now on
+     */
+    me.rename = function(new_name){
+        client.renamePlaylist(me.getName(), new_name);
+        source.playlist = new_name;
     };
 
     /**

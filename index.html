@@ -88,6 +88,7 @@ template for a song on a playlist
                         <span></span>
                         <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
                         <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
+                        <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeSongFromPlaylist(this)">&nbsp;</span>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -272,6 +273,9 @@ template for an output
 </head>
 <body>
     <div class="TAB_container UI_main">
+        <div class="MPD_disconnected">
+            <span>Connecting...</span>
+        </div>
         <div class="TAB_body">
 <!--
 < MAIN CONTROL
@@ -360,9 +364,10 @@ template for an output
             <div class="TAB_page vbox" data-tab_page="playlists">
                 <div class="MPD_playlist LIST">
                     <ul class="LIST_header LIST_playlist_toolbar MPD_toolbar">
-                        <li><select class="MPD_playlist_list" onchange="UI.selectPlaylist(this);"></select></li><br/>
+                        <select class="MPD_playlist_list" onchange="UI.selectPlaylist(this);"></select><br/>
                         <li class="LIST_load_playlist MPD_button" onclick="UI.loadPlaylist(this);">Load Into Queue</li>
                         <li class="LIST_delete_playlist MPD_button" onclick="UI.deletePlaylist(this);">Delete Playlist</li>
+                        <li class="LIST_rename_playlist MPD_button" onclick="UI.renamePlaylist(this);">Rename Playlist</li>
                     </ul>
                     <div class="LIST_empty">
                         <!--No songs in this playlist!-->
@@ -388,7 +393,7 @@ template for an output
 -->
             <div class="TAB_page vbox" data-tab_page="search">
                 <div class="MPD_search vbox">
-                    <form>
+                    <form onsubmit="UI.doSearch(this); return false;">
                         <div class="SEARCH_criteria vbox"></div>
                         <div class="SEARCH_criteria_control">
                             <span class="MPD_button SEARCH_add_criteria" onclick="UI.addSearchCriteria(this);">Add Criteria</span>

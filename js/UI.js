@@ -41,13 +41,15 @@ var UI = (function(){
             client.on('Connect',function(){
                 var element = $('[data-instance_idx='+idx+'] .INSTANCE_connection_status');
                 element.html('Connected!');
-                element.addClass('good')
+                element.addClass('good');
+                $('.MPD_disconnected').css({display:'none'});
             });
 
             client.on('Disconnect',function(){
                 var element = $('[data-instance_idx='+idx+'] .INSTANCE_connection_status');
                 element.html('Not Connected!');
-                element.addClass('bad')
+                element.addClass('bad');
+                $('.MPD_disconnected').css({display:''});
             });
 
             UI.clients.push(client);
@@ -139,6 +141,7 @@ var UI = (function(){
                 }
                 var contents = getItemUI(template_id);
                 contents.attr('data-mpd_file_name', me.getPath());
+                contents.attr('data-mpd_playlist_position', me.getPlaylistPosition());
                 return contents;
             }
 
@@ -336,12 +339,16 @@ var UI = (function(){
     function updatePlaylists(playlists, client){
         var playlist_selector = $('.MPD_playlist select.MPD_playlist_list');
         var old_selected = playlist_selector.val();
+        if(updatePlaylists.on_update_select){
+            old_selected = updatePlaylists.on_update_select;
+            delete updatePlaylists.on_update_select;
+        }
         var option_code = '';
         playlists.forEach(function(playlist){
             option_code += '<option value="'+playlist+'">'+playlist+'</option>';
         });
         playlist_selector.html(option_code);
-        if(old_selected !== null){
+        if(old_selected !== null && playlist_selector.find('option[value="'+old_selected+'"]').length){
             playlist_selector.val(old_selected);
         }
 
@@ -865,6 +872,25 @@ var UI = (function(){
     }
 
     /**
+     * change the name of the current playlist
+     */
+    function renamePlaylist(element){
+        var playlist = getPlaylist(element);
+        var playlist_name = playlist.getName();
+        do{
+            playlist_name = prompt('New Playlist Name', playlist_name);
+        }while(playlist_name === '');
+
+        //if the user clicked cancel don't do anything
+        if(playlist_name === null){
+            return;
+        }
+
+        updatePlaylists.on_update_select = playlist_name;
+        playlist.rename(playlist_name);
+    }
+
+    /**
      * a setting changed
      */
     function settingChange(element){
@@ -1101,6 +1127,18 @@ var UI = (function(){
     }
 
     /**
+     *
+     */
+    function removeSongFromPlaylist(element){
+        var playlist = getPlaylist(element);
+        var song_file = getData(element, 'mpd_file_name');
+        var song_position = getData(element, 'mpd_playlist_position');
+        if(confirm('Are you sure you want to remove the song "'+song_file+'" from the Playlist "'+playlist.getName()+'"?')){
+            playlist.removeSongByPosition(song_position);
+        }
+    }
+
+    /**
      * make the search criteria visible
      */
     function expandSearch(element){
@@ -1205,8 +1243,10 @@ var UI = (function(){
         addSongToQueue:addSongToQueue,
         addSongToQueueAndPlay:addSongToQueueAndPlay,
         addSongToPlaylist:addSongToPlaylist,
+        removeSongFromPlaylist:removeSongFromPlaylist,
         saveQueueAsPlaylist:saveQueueAsPlaylist,
         deletePlaylist:deletePlaylist,
+        renamePlaylist:renamePlaylist,
         addDirectoryToQueue:addDirectoryToQueue,
         settingChange:settingChange,
         addSearchCriteria:addSearchCriteria,

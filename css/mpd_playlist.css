@@ -2,6 +2,17 @@
     height:0;
 }
 
+.LIST_playlist_toolbar{
+    min-height: 3em;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.LIST_playlist_toolbar select{
+    position: fixed;
+    width:calc(100% - 1em);
+}
+
 .LIST_load_playlist.MPD_button{
     background-image:  url(../img/plus.svg);
     background-position: left center;
@@ -11,6 +22,13 @@
 
 .LIST_delete_playlist.MPD_button{
     background-image:  url(../img/trash.svg);
+    background-position: left center;
+    padding-left: 20px;
+    margin-left:1em;
+}
+
+.LIST_rename_playlist.MPD_button{
+    background-image:  url(../img/rename.svg);
     background-position: left center;
     padding-left: 20px;
     margin-left:1em;
