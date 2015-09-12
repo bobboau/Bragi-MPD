@@ -1685,7 +1685,7 @@ function MPD(_port, _host){
         }
 
         if(event_name !== 'Event'){
-            callHandler('Event', {type:event_name, data:event.data});
+            callHandler('Event', {type:event_name, data:args});
         }
     }
 

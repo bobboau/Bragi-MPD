@@ -1,0 +1,13 @@
+/******************************\
+|* firefox specific css fixes *|
+\******************************/
+
+_:-moz-tree-row(hover), .MPD_volume{
+    height:100%;
+}
+
+
+
+_:-moz-tree-row(hover), .LIST_playlist_toolbar .MPD_button{
+    margin-top: 0.75em;
+}

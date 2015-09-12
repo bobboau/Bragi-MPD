@@ -47,7 +47,6 @@ li.LIST_directory:not(.expanded) .MPD_directory_children .LIST_item{
 
 .LIST_directory.expanded:not(.root) {
     background-image: url(../img/chevron-left.svg);
-    padding-left: 1em;
     background-position-x: -0.1em;
 }
 

@@ -4,6 +4,7 @@
 
 .LIST_playlist_toolbar{
     min-height: 3em;
+    margin-bottom: 0;
     overflow-x: auto;
     white-space: nowrap;
 }

@@ -5,6 +5,10 @@
     height:60px;
 }
 
+.MPD_controller_extra_info div * {
+    font-size: 0.8em;
+}
+
 .MPD_play.MPD_button{
     width: 60px;
     background-image:  url(../img/media-play.svg);
