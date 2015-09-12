@@ -11,8 +11,11 @@
     <link rel="apple-touch-icon" sizes="128x128" href="/img/bragi-128.png">
     <link rel="apple-touch-icon-precomposed" sizes="128x128" href="/img/bragi-128.png">
 
-    <link rel="stylesheet" href="css/tab.css"/>
+    <link rel="stylesheet" href="css/normalize.css"/>
+    <link rel="stylesheet" href="css/firefox.css"/>
+    <link rel="stylesheet" href="css/ie.css"/>
     <link rel="stylesheet" href="css/list.css"/>
+    <link rel="stylesheet" href="css/tab.css"/>
     <link rel="stylesheet" href="css/mpd_controller.css"/>
     <link rel="stylesheet" href="css/mpd_output.css"/>
     <link rel="stylesheet" href="css/mpd_instances.css"/>
@@ -24,7 +27,6 @@
     <link rel="stylesheet" href="css/songs.css"/>
     <link rel="stylesheet" href="css/style.css"/>
     <link rel="stylesheet" href="css/color.css"/>
-    <link rel="stylesheet" href="css/firefox.css"/>
 
     <!-- application configuration object -->
     <script src="config.js"></script>
@@ -231,8 +233,8 @@ template for search criteria
 -->
     <template id="template_SEARCH_criteria">
         <div class="hbox colapse SEARCH_criteria_row">
-            <select class="SEARCH_criteria_type" onchange="UI.updateSearchEditor(this);" />
-            <input class="SEARCH_criteria_value" onchange="UI.onSearchCriteriaValueChange(this);" />
+            <select class="SEARCH_criteria_type" onchange="UI.updateSearchEditor(this);" ></select>
+            <input class="SEARCH_criteria_value" onchange="UI.onSearchCriteriaValueChange(this);" ></input>
             <div class="MPD_button SEARCH_remove colapse" onclick="UI.removeSearchCriteria(this);">Remove</div>
         </div>
     </template>
@@ -423,19 +425,19 @@ template for an output
             <div class="TAB_page" data-tab_page="settings">
                 <table class="MPD_setting">
                     <tr>
-                        <th>Repeat:</th><td><input type="checkbox" data-setting="repeat" onchange="UI.settingChange(this);"/></td>
+                        <th>Repeat:</th><td><input type="checkbox" data-setting="repeat" onchange="UI.settingChange(this);"></input></td>
                     </tr>
                     <tr>
-                        <th>Single:</th><td><input type="checkbox" data-setting="single" onchange="UI.settingChange(this);"/></td>
+                        <th>Single:</th><td><input type="checkbox" data-setting="single" onchange="UI.settingChange(this);"></input></td>
                     </tr>
                     <tr>
-                        <th>Consume:</th><td><input type="checkbox" data-setting="consume" onchange="UI.settingChange(this);"/></td>
+                        <th>Consume:</th><td><input type="checkbox" data-setting="consume" onchange="UI.settingChange(this);"></input></td>
                     </tr>
                     <tr>
-                        <th>Random:</th><td><input type="checkbox" data-setting="random" onchange="UI.settingChange(this);"/></td>
+                        <th>Random:</th><td><input type="checkbox" data-setting="random" onchange="UI.settingChange(this);"></input></td>
                     </tr>
                     <tr>
-                        <th>Crossfade:</th><td><input type="number" data-setting="crossfade" onchange="UI.settingChange(this);" onkeyup="UI.settingChange(this);" min="0" step="1"/>(seconds)</td>
+                        <th>Crossfade:</th><td><input type="number" data-setting="crossfade" onchange="UI.settingChange(this);" onkeyup="UI.settingChange(this);" min="0" step="1"></input>(seconds)</td>
                     </tr>
                 </table>
             </div>

@@ -1,6 +1,6 @@
 @font-face {
     font-family: default_font;
-    src: url(/img/Vera.ttf);
+    src: url(/img/DejaVuSans.ttf)
 }
 
 html, body{
@@ -21,6 +21,11 @@ html, body{
     cursor:default;
 
     font-family: default_font;
+}
+
+/*for browsers that don't support this properly*/
+template{
+    display:none;
 }
 
 @media screen and (min-width: 720px) {
@@ -74,6 +79,7 @@ html, body{
 input[type=range][orient=vertical]{
     -webkit-appearance: slider-vertical;
     appearance: slider-vertical;
+    writing-mode: bt-lr;
 }
 
 select {

@@ -52,7 +52,8 @@ div.MPD_controller_volume_container{
 }
 
 .MPD_controller input[type=range].MPD_seek{
-    margin: 0px 10px;
+    padding:0;
+    margin: auto 10px;
 }
 
 .MPD_controller .MPD_volume{
