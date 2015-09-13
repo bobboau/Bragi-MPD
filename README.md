@@ -39,6 +39,16 @@ Bragi aims to be a full featured MPD client, though it is work in progress and n
   * veiw and explore the MPD file database directly
   * add individual songs from a directory to queue / playlist
   * add all songs from a directory to queue / playlist
+ * Search
+  * search based on progressivly filtered tags
+  * free form search on all tags
+  * add results to queue or playlist
+ * Settings
+  * change MPD settings, such as random, single play, crossfade, and consume
+ * Outputs
+  * enable/disable outputs manualy or switch cleanly
+ * Instances
+  * control multiple MPD instances (requires configuration)
   
 
 Installation and Setup
