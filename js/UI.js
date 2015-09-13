@@ -120,6 +120,7 @@ var UI = (function(){
                 }
                 var contents = getItemUI(template_id);
                 contents.attr('data-mpd_queue_song_id', me.getId());
+                contents.attr('data-mpd_songlist_position', me.getQueuePosition());
                 return contents;
             }
 
@@ -141,7 +142,7 @@ var UI = (function(){
                 }
                 var contents = getItemUI(template_id);
                 contents.attr('data-mpd_file_name', me.getPath());
-                contents.attr('data-mpd_playlist_position', me.getPlaylistPosition());
+                contents.attr('data-mpd_songlist_position', me.getPlaylistPosition());
                 return contents;
             }
 
@@ -456,6 +457,17 @@ var UI = (function(){
      */
     function getClient(){
         return UI.clients[UI.active_client];
+    }
+
+    /**
+     * assuming this element is under a playlist or a queue, get it
+     */
+    function getSonglist(element){
+        var playlist = $(element).closest('.MPD_playlist').data('playlist');
+        if(playlist){
+            return playlist;
+        }
+        return getClient().getQueue();
     }
 
     /**
@@ -1132,7 +1144,7 @@ var UI = (function(){
     function removeSongFromPlaylist(element){
         var playlist = getPlaylist(element);
         var song_file = getData(element, 'mpd_file_name');
-        var song_position = getData(element, 'mpd_playlist_position');
+        var song_position = getData(element, 'mpd_songlist_position');
         if(confirm('Are you sure you want to remove the song "'+song_file+'" from the Playlist "'+playlist.getName()+'"?')){
             playlist.removeSongByPosition(song_position);
         }
@@ -1223,6 +1235,94 @@ var UI = (function(){
         output.disable();
     }
 
+    /**
+     * given an item on a queue/playlist swap it with the previous one
+     */
+    function moveItemUp(element){
+        var songlist = getSonglist(element);
+        var position = getData(element, 'mpd_songlist_position');
+        songlist.moveSongByPosition(position, position-1);
+    }
+
+    /**
+     * given an item on a queue/playlist swap it with the next one
+     */
+    function moveItemDown(element){
+        var songlist = getSonglist(element);
+        var position = getData(element, 'mpd_songlist_position');
+        songlist.moveSongByPosition(position, position+1);
+    }
+
+    /**
+     * given an item on a queue/playlist move it somewhere else
+     */
+    function moveItemStartReorder(element){
+        var songlist = getSonglist(element);
+        var position = getData(element, 'mpd_songlist_position');
+
+        var list_element = $(element).closest('.LIST_contents');
+        var element_overlay = $(element).closest('.LIST_item').find('.LIST_overlay');
+        var other_overlays = list_element.find('.LIST_overlay').not(element_overlay);
+
+        //setup the cancel overlay on the origonal element
+        element_overlay.css({display:'', 'cursor': 'pointer', 'border-color':'white', 'border-style': 'dashed'});
+        element_overlay.find('.LIST_overlay_message').html('Click Here to Cancel');
+        element_overlay.on('click',function(){cancelReorder(element);});
+
+        //set up the swap, move before and move after buttons on every other overlay
+        other_overlays.css({display:''});
+        //swap
+        var button = other_overlays.find('.LIST_overlay_message');
+        button.html('Swap with this song');
+        button.on('click',function(){
+            var other_position = getData(this, 'mpd_songlist_position');
+            songlist.swapSongsByPosition(position, other_position);
+        });
+        button.css({'background-color':'rgba(255,255,255,0.25)', 'cursor': 'pointer', 'border-radius':'10px'});
+        //before
+        var button = other_overlays.find('.LIST_overlay_header');
+        button.html('&uarr; Move Before This Song &uarr;');
+        button.on('click',function(){
+            var other_position = getData(this, 'mpd_songlist_position');
+            if(other_position > position){
+                songlist.moveSongByPosition(position, other_position-1);
+            }
+            else{
+                songlist.moveSongByPosition(position, other_position);
+            }
+        });
+        button.css({'background-color':'rgba(255,255,255,0.25)', 'cursor': 'pointer', 'border-radius':'10px'});
+        //after
+        var button = other_overlays.find('.LIST_overlay_footer');
+        button.html('&darr; Move After This Song &darr;');
+        button.on('click',function(){
+            var other_position = getData(this, 'mpd_songlist_position');
+            if(other_position > position){
+                songlist.moveSongByPosition(position, other_position);
+            }
+            else{
+                songlist.moveSongByPosition(position, other_position+1);
+            }
+        });
+        button.css({'background-color':'rgba(255,255,255,0.25)', 'cursor': 'pointer', 'border-radius':'10px'});
+    }
+
+    /**
+     * stop trying to reorder things
+     */
+    function cancelReorder(element){
+        var overlays = $(element).closest('.LIST_contents').find('.LIST_overlay');
+        //remove ALL event handlers from ALL overlay elements
+        overlays.off();
+        overlays.find('*').off();
+        //clear everything in the message
+        overlays.find('.LIST_overlay_message').html('');
+        //remove all special formatting
+        overlays.removeAttr('style')
+        //hide the overlays
+        overlays.css({display:'none'});
+    }
+
     return {
         play:play,
         pause:pause,
@@ -1263,6 +1363,10 @@ var UI = (function(){
         selectInstance:selectInstance,
         switchToOutput:switchToOutput,
         enableOutput:enableOutput,
-        disableOutput:disableOutput
+        disableOutput:disableOutput,
+        moveItemUp:moveItemUp,
+        moveItemDown:moveItemDown,
+        moveItemStartReorder:moveItemStartReorder,
+        cancelReorder:cancelReorder
     };
 })();

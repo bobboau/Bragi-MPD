@@ -2057,7 +2057,7 @@ MPD.QueueSong = function(client, source){
      * @returns {Integer} the position of the song on the queue. the queue index.
      */
     me.getQueuePosition = function(){
-        return source.id;
+        return source.pos;
     };
 
     /**
@@ -2253,6 +2253,17 @@ MPD.Songlist = function(client, source){
      };
 
      /**
+      * swap two songs
+      * @instance
+      * @abstract
+      * @param {Integer} position_a - position on the list of the song you want to move
+      * @param {Integer} position_b - position on the list of the other song you want to move
+      */
+     me.swapSongsByPosition = function(position_a, position_b){
+         throw new Error('must be implemented by subclass!');
+     };
+
+     /**
       * get the list of songs
       * @instance
       * @returns {Song[]}
@@ -2295,6 +2306,12 @@ MPD.Playlist = function(client, source){
     };
     me.moveSongByPosition = function(position, to){
         client.moveSongOnPlaylistByPosition(me.getName(), position, to);
+    };
+    me.swapSongsByPosition = function(position_a, position_b){
+        var first = Math.min(position_a, position_b);
+        var last = Math.max(position_a, position_b);
+        me.moveSongByPosition(first,last);
+        me.moveSongByPosition(last,first);
     };
 
     /**
@@ -2365,6 +2382,9 @@ MPD.Queue = function(client, source){
    };
    me.moveSongByPosition = function(position, to){
        client.moveSongOnQueueByPosition(position, to);
+   };
+   me.swapSongsByPosition = function(position_a, position_b){
+       client.swapSongsOnQueueByPosition(position_a, position_b);
    };
 
    /**

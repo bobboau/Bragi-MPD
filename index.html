@@ -50,6 +50,11 @@ template for a song on the queue
 -->
     <template id="template_LIST_queue_song">
         <li class="LIST_item LIST_song hbox" data-mpd_queue_song_id="">
+            <div class="LIST_overlay" style="display:none;">
+                <div class="LIST_overlay_header"></div>
+                <div class="LIST_overlay_message"></div>
+                <div class="LIST_overlay_footer"></div>
+            </div>
             <span class="LIST_song_important_information">
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
@@ -76,6 +81,11 @@ template for a song on the queue
                 </span>
                 <div class="LIST_song_property LIST_song_path"></div>
             </span>
+            <span class="vbox colapse LIST_move">
+                <div class="MPD_button LIST_song_move_up" onclick="UI.moveItemUp(this);"></div>
+                <div class="MPD_button LIST_song_swap" onclick="UI.moveItemStartReorder(this);"></div>
+                <div class="MPD_button LIST_song_move_down" onclick="UI.moveItemDown(this);"></div>
+            </span>
         </li>
     </template>
 
@@ -83,7 +93,12 @@ template for a song on the queue
 template for a song on a playlist
 -->
     <template id="template_LIST_playlist_song">
-        <li class="LIST_item LIST_song vbox">
+        <li class="LIST_item LIST_song hbox">
+            <div class="LIST_overlay" style="display:none;">
+                <div class="LIST_overlay_header"></div>
+                <div class="LIST_overlay_message"></div>
+                <div class="LIST_overlay_footer"></div>
+            </div>
             <span class="LIST_song_important_information">
                 <div>
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
@@ -110,6 +125,11 @@ template for a song on a playlist
                     </span>
                 </span>
                 <div class="LIST_song_property LIST_song_path"></div>
+            </span>
+            <span class="vbox colapse LIST_move">
+                <div class="MPD_button LIST_song_move_up" onclick="UI.moveItemUp(this);"></div>
+                <div class="MPD_button LIST_song_swap" onclick="UI.moveItemStartReorder(this);"></div>
+                <div class="MPD_button LIST_song_move_down" onclick="UI.moveItemDown(this);"></div>
             </span>
         </li>
     </template>
@@ -349,10 +369,10 @@ template for an output
             <div class="TAB_page TAB_default vbox" data-tab_page="queue">
                 <div class="MPD_queue LIST">
                     <ul class="LIST_header LIST_song_toolbar MPD_toolbar">
-                        <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
-                        <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
-                        <li class="LIST_remove_current MPD_button" onclick="UI.removeCurrenSong(this);">Remove Current Song</li>
                         <li class="LIST_show_current MPD_button" onclick="UI.showCurrenSong(this);">Scroll to Current Song</li>
+                        <li class="LIST_remove_current MPD_button" onclick="UI.removeCurrenSong(this);">Remove Current Song</li>
+                        <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
+                        <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
                     </ul>
                     <div class="LIST_empty">
                         The Queue is empty!
