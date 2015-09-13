@@ -50,7 +50,7 @@ li.LIST_directory:not(.expanded) .MPD_directory_children .LIST_item{
     background-position-x: -0.1em;
 }
 
-.expanded > div > .LIST_song_add{
+.expanded > div > .MPD_button{
     display: none;
 }
 
@@ -65,8 +65,10 @@ li.LIST_directory:not(.expanded) .MPD_directory_children .LIST_item{
 .LIST_directory .LIST_song_add_playlist{
     width: 1em;
     display: inline-block;
-    margin: 0 0 0 1em;
-    background-image:  url(../img/list.svg);
+    background-image: url(../img/list.svg);
+    margin-left: 8em;
+    padding-left: 2.5em;
+    font-size: 0.75em;
 }
 
 .MPD_directory_children .LIST_song{

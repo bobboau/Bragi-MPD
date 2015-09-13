@@ -819,6 +819,24 @@ var UI = (function(){
 
 
     /**
+     * add all songs under this directory to a playlist
+     */
+    function addDirectoryToPlaylist(element){
+        var playlist_name = '';
+        while(playlist_name === ''){
+            playlist_name = prompt('Playlist Name to save the Queue as');
+        }
+        //if the user clicked cancel don't do anything
+        if(playlist_name === null){
+            return;
+        }
+
+        var path = getFileListPath(element);
+        getClient().addSongToPlaylistByFile(playlist_name, path);
+    }
+
+
+    /**
      * add a song by it's filename
      */
     function addSongToQueue(element){
@@ -1266,7 +1284,7 @@ var UI = (function(){
 
         //setup the cancel overlay on the origonal element
         element_overlay.css({display:'', 'cursor': 'pointer', 'border-color':'white', 'border-style': 'dashed'});
-        element_overlay.find('.LIST_overlay_message').html('Click Here to Cancel');
+        element_overlay.find('.LIST_overlay_message').html('Click Here to Cancel Move');
         element_overlay.on('click',function(){cancelReorder(element);});
 
         //set up the swap, move before and move after buttons on every other overlay
@@ -1348,6 +1366,7 @@ var UI = (function(){
         deletePlaylist:deletePlaylist,
         renamePlaylist:renamePlaylist,
         addDirectoryToQueue:addDirectoryToQueue,
+        addDirectoryToPlaylist:addDirectoryToPlaylist,
         settingChange:settingChange,
         addSearchCriteria:addSearchCriteria,
         updateSearchEditor:updateSearchEditor,
