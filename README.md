@@ -1,10 +1,7 @@
 # Bragi-MPD
 Full featured, mobile friendly MPD web client. Based on MPD.js
 
-Intro
------
-
-Bragi-MPD a fully featured, HTML5, mobile friendly MPD web client made using [MPD.js](https://github.com/bobboau/MPD.js). Bragi-MPD is intended to allow you to play your music the way you want to wherever you are and with any device capable of loading a web page. You can manage playlists, search your music database, or manually navigate your music files. Inherently multi-user friendly it is like it's namesake, great at parties.
+Bragi-MPD a fully featured, HTML5, mobile friendly MPD web client made using [MPD.js](https://github.com/bobboau/MPD.js). Bragi-MPD is intended to allow you to play your music the way you want, wherever you are, and with any device capable of loading a web page. You can manage playlists, search your music database, or manually navigate your music files. Inherently multi-user friendly it is like it's namesake, great at parties.
 
 Bragi supports managing multiple outputs per MPD instance, and can be configured to manage multiple instances (on multiple hosts) making it ideally suited to controlling music on zoned sound systems.
 
