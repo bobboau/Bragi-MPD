@@ -925,7 +925,7 @@ var UI = (function(){
      */
     function settingChange(element){
         var which_setting = $(element).data('setting');
-        var value = $(element).is('input[type=checkbox]')?$(element).attr('checked'):$(element).val();
+        var value = $(element).is('input[type=checkbox]')?$(element).is(':checked'):$(element).val();
         //jquery on the subject of checkboxes: "because fuck your consistency and fuck you!"
         switch(which_setting){
             case 'repeat':
