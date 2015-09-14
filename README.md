@@ -21,7 +21,7 @@ Bragi aims to be a full featured MPD client, though it is work in progress and n
   * add songs by various means (mentioned elsewhere, i.e. search, playlist, manual file lookup)
   * remove a song from the queue
   * reorder songs on the queue
-  * show currently playing song ont the queue
+  * show currently playing song on the queue
   * remove currently playing song from the queue  
   * save queue as playlist
   * clear queue
