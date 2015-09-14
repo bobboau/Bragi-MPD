@@ -136,7 +136,6 @@ select {
 }
 
 .UI_main .TAB_control{
-    height:30px;
     overflow-x: auto;
 }
 
@@ -145,7 +144,8 @@ select {
     border-width: 2px;
     border-right-style: none;
     white-space: nowrap;
-    padding: 0 1em;
+    padding: 0.25em 1em;
+    min-width: -webkit-min-content; /*screw you Steve Jobs, I want my sunday back*/
 }
 
 .UI_main .TAB_selected + .TAB_button{

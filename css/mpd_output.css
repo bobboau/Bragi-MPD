@@ -1,3 +1,8 @@
+.MPD_outputs{
+    height: 0;
+    overflow-y: auto;
+}
+
 .OUTPUT_output{
     list-style-type: none;
     border-style: solid;
