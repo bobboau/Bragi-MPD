@@ -621,7 +621,8 @@ var UI = (function(){
             var client = getClient();
             updateState(client.getState(), client);
             updateQueue(client.getQueue(), client);
-            updatePlaylists(client.getPlaylists, client);
+            updatePlaylists(client.getPlaylists(), client);
+            updateOutputs(client.getOutputs(), client);
         }
         else{
             alert("Error: cannot switch to a disconnected client");
