@@ -2,10 +2,15 @@
  * sets up tab controls
  */
 
-(function(){
+var TABS = (function(){
+
+    var TABS = [];
+
     $(function(){
         //setup any exsisting tabs
-        $('.TAB_container').each(function(i,e){setupTab(e)});
+        $('.TAB_container').each(function(i,e){
+            setupTab(e);
+        });
 
         //setup any future tabs
         $(document).bind('DOMNodeInserted', function(e) {
@@ -21,9 +26,14 @@
     function setupTab(element){
         var tab_root = getTabRoot(element);
         var default_page = getDefaultPage(tab_root);
+        TABS.push({
+            root:tab_root[0],
+            active_tab:null
+        });
         showPage(tab_root, default_page);
         //setup listeners on the buttons
         tab_root.find('.TAB_button').on('click',tabButtonClicked);
+        UI.pushState(default_page);
     }
 
     /**
@@ -49,6 +59,12 @@
         tab_root.find('[data-tab_page].TAB_button').removeClass('TAB_selected');
         //mark selection on the one button that is now selected
         tab_root.find('[data-tab_page='+page+'].TAB_button').addClass('TAB_selected');
+        for(var i = 0; i<TABS.length; i++){
+            if(TABS[i].root === element[0]){
+                TABS[i].active_tab = page;
+                break;
+            }
+        }
     }
 
     /**
@@ -78,5 +94,30 @@
         var page = $(event.currentTarget).data('tab_page');
         var tab_root = getTabRoot(event.currentTarget);
         showPage(tab_root, page);
+        UI.pushState(page);
     }
+
+    return {
+        showPage:function(tab_root, page){
+            showPage($(tab_root), page);
+            UI.pushState(page);
+        },
+        getActiveTabs:function(){
+            var out = [];
+            for(var i = 0; i<TABS.length; i++){
+                var tab = TABS[i];
+                out.push({
+                    root:tab.root,
+                    active_tab:tab.active_tab
+                });
+            }
+            return out;
+        },
+        setActiveTabs:function(tabs){
+            for(var i = 0; i<tabs.length; i++){
+                var tab = tabs[i];
+                showPage(tab.root, tab.active_tab);
+            }
+        }
+    };
 })();

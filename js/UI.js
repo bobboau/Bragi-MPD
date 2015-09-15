@@ -11,7 +11,10 @@ var UI = (function(){
             state:[],
             queue:[],
             playlist:[]
-        }
+        },
+        history_state:[],
+        active_history_state:-1,
+        last_clicked_file_element:null
     };
 
     /********\
@@ -378,6 +381,9 @@ var UI = (function(){
 
             //populate the file root
             var root = $('[data-tab_page=files] .LIST_directory');
+            if(UI.last_clicked_file_element === null){
+                UI.last_clicked_file_element = root;
+            }
             populateFileList(root);
             //the root is treated differently than the rest of the oflders
             //you can't close it and it shouldn't have the common tools
@@ -603,9 +609,56 @@ var UI = (function(){
         return data_element.data(data);
     }
 
+    /**
+     * set the active client to the one specified
+     */
+    function setInstance(idx){
+        if(idx === UI.active_client){
+            return;
+        }
+        if(UI.clients[idx].isConnected()){
+            UI.active_client = idx;
+            var client = getClient();
+            updateState(client.getState(), client);
+            updateQueue(client.getQueue(), client);
+            updatePlaylists(client.getPlaylists, client);
+        }
+        else{
+            alert("Error: cannot switch to a disconnected client");
+        }
+    }
+
     /******************\
     |* public methods *|
     \******************/
+
+    /**
+     *wrapper for the history.pushState method
+     *history.pushState cannot handle functions or DOM elements or lots of things,
+     *but it CAN handle an index to another array that CAN handle it
+     */
+    function pushState(title){
+        history.pushState(UI.history_state.length, title);
+        UI.history_state.length = UI.active_history_state+1;
+        UI.history_state.push({
+            client_idx: UI.active_client,
+            tabs: TABS.getActiveTabs(),
+            file_element:UI.last_clicked_file_element
+        });
+        UI.active_history_state = UI.history_state.length-1;
+    }
+
+    window.addEventListener("popstate", function(event){
+        if(event.state === null){
+            history.back();//skip the "initial" state
+            return;
+        }
+        UI.active_history_state = event.state;
+        var state = UI.history_state[UI.active_history_state];
+        setInstance(state.client_idx);
+        fileListClick(state.file_element);
+        TABS.setActiveTabs(state.tabs);
+    });
 
     /**
      * start playing
@@ -758,6 +811,7 @@ var UI = (function(){
      * toggle showing children, if no chilrent populate from the client
      */
     function fileListClick(element){
+        UI.last_clicked_file_element = element;
         var parent = $(element).closest('.LIST_directory');
         if(parent.length === 0){
             return;
@@ -1204,16 +1258,7 @@ var UI = (function(){
      */
     function selectInstance(element){
         var idx = $(element).closest('[data-instance_idx]').data('instance_idx');
-        if(UI.clients[idx].isConnected()){
-            UI.active_client = idx;
-            var client = getClient();
-            updateState(client.getState(), client);
-            updateQueue(client.getQueue(), client);
-            updatePlaylists(client.getPlaylists, client);
-        }
-        else{
-            alert("Error: cannot switch to a disconnected client");
-        }
+        setInstance(idx);
     }
 
     /**
@@ -1342,6 +1387,7 @@ var UI = (function(){
     }
 
     return {
+        pushState:pushState,
         play:play,
         pause:pause,
         stop:stop,
@@ -1355,7 +1401,10 @@ var UI = (function(){
         removeCurrentQueueSong:removeCurrentQueueSong,
         showCurrenSong:showCurrenSong,
         clearQueue:clearQueue,
-        fileListClick:fileListClick,
+        fileListClick:function(element){
+            fileListClick.apply(this,arguments);
+            this.pushState($(element).find('.LIST_directory_path').html());
+        },
         removeQueueSong:removeQueueSong,
         clearQueue:clearQueue,
         addSongToQueue:addSongToQueue,
