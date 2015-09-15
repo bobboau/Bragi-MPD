@@ -245,6 +245,9 @@ var UI = (function(){
      * update our UI on a state change
      */
     function updateState(state, client){
+        if(client != getClient()){
+            return;
+        }
         $('input.MPD_volume').val(client.getVolume());
 
         if(client.getPlaystate() == 'play'){
@@ -289,6 +292,9 @@ var UI = (function(){
      * update our UI for outputs
      */
     function updateOutputs(outputs, client){
+        if(client != getClient()){
+            return;
+        }
         $('.MPD_outputs').empty();
         if(outputs.length == 1){
             //if there is only one then there really isn't any need for this tab
@@ -319,6 +325,9 @@ var UI = (function(){
      * update our UI on a Queue change
      */
     function updateQueue(queue, client){
+        if(client != getClient()){
+            return;
+        }
         $('.MPD_queue').each(function(i,queue_element){
             queue_element.setItems(queue.getSongs());
         });
@@ -341,6 +350,9 @@ var UI = (function(){
      * update our UI on a playlist change
      */
     function updatePlaylists(playlists, client){
+        if(client != getClient()){
+            return;
+        }
         var playlist_selector = $('.MPD_playlist select.MPD_playlist_list');
         var old_selected = playlist_selector.val();
         if(updatePlaylists.on_update_select){
@@ -619,6 +631,17 @@ var UI = (function(){
         if(UI.clients[idx].isConnected()){
             UI.active_client = idx;
             var client = getClient();
+
+            //Reset current song data. It's stange to keep the data if
+            //the new instance don't have a curent song
+            $('.MPD_controller_current_song_title').empty();
+            $('.MPD_controller_current_song_artist').empty();
+            $('.MPD_controller_current_song_album').empty();
+            $('.MPD_controller_current_song_time').empty();
+            $('.MPD_controller_current_song_duration').empty();
+            $('input.MPD_seek').prop('max',100);
+            $('input.MPD_seek').val(0);
+
             updateState(client.getState(), client);
             updateQueue(client.getQueue(), client);
             updatePlaylists(client.getPlaylists(), client);
