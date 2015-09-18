@@ -39,6 +39,7 @@ var UI = (function(){
             var client = MPD(client_config.port, client_config.hostname);
 
             client.name = client_config.name;
+            client.idx = idx;
 
             client.on('StateChanged',updateState);
 
@@ -50,19 +51,9 @@ var UI = (function(){
 
             client.on('DataLoaded', updateFiles);
 
-            client.on('Connect',function(){
-                var element = $('[data-instance_idx='+idx+'] .INSTANCE_connection_status');
-                element.html('Connected!');
-                element.addClass('good');
-                $('.MPD_disconnected').css({display:'none'});
-            });
+            client.on('Connect', onConnect);
 
-            client.on('Disconnect',function(){
-                var element = $('[data-instance_idx='+idx+'] .INSTANCE_connection_status');
-                element.html('Not Connected!');
-                element.addClass('bad');
-                $('.MPD_disconnected').css({display:''});
-            });
+            client.on('Disconnect', onDisconnect);
 
             UI.clients.push(client);
         });
@@ -237,6 +228,9 @@ var UI = (function(){
 
         CONFIG.clients.forEach(function(client_config, idx){
             var contents = $($('#template_INSTANCE').html());
+            if(idx === 0){
+                contents.addClass('selected');
+            }
             contents.attr('data-instance_idx', idx);
             contents.find('.INSTANCE_name').html(client_config.name);
             contents.find('.INSTANCE_port').html(client_config.port);
@@ -244,8 +238,11 @@ var UI = (function(){
                 contents.find('.INSTANCE_host').html(client_config.hostname);
             }
             else{
-                contents.find('.INSTANCE_host').remove();
+                contents.find('.INSTANCE_host').closest('tr').remove();
             }
+            var connection_element = contents.find('.INSTANCE_connection_status');
+            connection_element.html('Not Connected!');
+            connection_element.addClass('bad');
             $('.MPD_instances').append(contents);
         });
     }
@@ -415,6 +412,32 @@ var UI = (function(){
         root.find('.LIST_directory_path').html('Music Files');
         root.find('.MPD_button').remove();
         resetSearch(null, true);
+    }
+
+    /**
+     * called when a client (re)connects
+     */
+    function onConnect(connect_event, client){
+        var element = $('[data-instance_idx='+client.idx+'] .INSTANCE_connection_status');
+        element.html('Connected!');
+        element.addClass('good');
+        element.removeClass('bad');
+        if(client == getClient()){
+            $('.MPD_disconnected').css({display:'none'});
+        }
+    }
+
+    /**
+     * called when a client disconnects
+     */
+    function onDisconnect(disconnect_event, client){
+        var element = $('[data-instance_idx='+client.idx+'] .INSTANCE_connection_status');
+        element.html('Not Connected!');
+        element.addClass('bad');
+        element.removeClass('good');
+        if(client == getClient()){
+            $('.MPD_disconnected').css({display:''});
+        }
     }
 
     /**
@@ -651,10 +674,19 @@ var UI = (function(){
         $('input.MPD_seek').prop('max',100);
         $('input.MPD_seek').val(0);
 
-        updateState(client.getState(), client);
-        updateQueue(client.getQueue(), client);
-        updatePlaylists(client.getPlaylists(), client);
-        updateOutputs(client.getOutputs(), client);
+        //update the UI
+        $('.INSTANCE_instance').removeClass('selected');
+        $('[data-instance_idx='+idx+'].INSTANCE_instance').addClass('selected');
+        if(client.isConnected()){
+            updateState(client.getState(), client);
+            updateQueue(client.getQueue(), client);
+            updatePlaylists(client.getPlaylists(), client);
+            updateOutputs(client.getOutputs(), client);
+            $('.MPD_disconnected').css({display:'none'});
+        }
+        else{
+            $('.MPD_disconnected').css({display:''});
+        }
     }
 
     /******************\

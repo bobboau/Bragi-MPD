@@ -129,3 +129,13 @@ input{
     border-image-slice: 1;
     background: linear-gradient(135deg, #7BA777 0%, #9FBA9C 120%);
 }
+
+/*************\
+|* instances *|
+\*************/
+
+.INSTANCE_instance{
+    border-color: #38912F;
+    border-image-slice: 1;
+    background: linear-gradient(135deg, #7BA777 0%, #9FBA9C 120%);
+}

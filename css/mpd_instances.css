@@ -2,8 +2,31 @@
     cursor: pointer;
     border-style: solid;
     margin: 1em;
+    list-style-type: none;
+    border-style: solid;
+    margin: 10px;
+    border-radius: 10px;
+    padding: 10px;
 }
 
 .MPD_instances .INSTANCE_instance *{
     cursor: pointer;
+}
+
+.MPD_instances{
+    height: 0;
+    overflow-y: auto;
+}
+
+/*instance tab page should be above the "connecting'''" message, so you can switch to non-broken clients*/
+[data-tab_page=instance].TAB_page{
+    z-index: 3;
+}
+
+.INSTANCE_instance td{
+    padding: 5px;
+}
+
+.INSTANCE_instance th{
+    text-align: right;
 }
