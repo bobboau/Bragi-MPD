@@ -22,6 +22,15 @@ var UI = (function(){
     \********/
 
     $(function(){
+        //try to load custom configuration
+        //when done (wether it succeeds or fails) init the page
+        $.getScript( "config.js" ).done(init).fail(init);
+    });
+
+    /**
+     * one time setup function
+     */
+    function init(){
         overrideMpd();
 
         setupInstances();
@@ -71,7 +80,7 @@ var UI = (function(){
 
         //setup event handlers for marque elements
         setupMarque();
-    });
+    }
 
     /*******************\
     |* private methods *|
