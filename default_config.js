@@ -6,5 +6,6 @@ var CONFIG = {
             /*,
             hostname:'localhost'*/ //for example
         }
-    ]
+    ]/*,
+    theme:['alt_colors.css']*/
 };

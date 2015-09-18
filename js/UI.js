@@ -31,6 +31,16 @@ var UI = (function(){
      * one time setup function
      */
     function init(){
+        //load theme if it exsists
+        if(CONFIG.theme){
+            CONFIG.theme.forEach(function(theme_file){
+                $('<link>')
+                    .appendTo('head')
+                    .attr({type : 'text/css', rel : 'stylesheet'})
+                    .attr('href', theme_file);
+            });
+        }
+
         overrideMpd();
 
         setupInstances();
