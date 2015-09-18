@@ -139,3 +139,8 @@ input{
     border-image-slice: 1;
     background: linear-gradient(135deg, #7BA777 0%, #9FBA9C 120%);
 }
+
+.INSTANCE_instance.selected{
+    background: linear-gradient(45deg, #7BA777 100%, #9FBA9C 50%);
+    border-color:black;
+}
