@@ -387,33 +387,34 @@ var UI = (function(){
     /**
      * setup the file browser
      */
-    function updateFiles(){
-        setTimeout(function(){
-            var element = $('.MPD_file_placeholder');
-            if(element.length){
-                //manually make the file root if it does not exsist
-                var contents = $($('#template_LIST_directory').html());
-                element.replaceWith(contents);
-            }
-            else{
-                //empty out anexsisting root
-                $('[data-tab_page=files] .LIST_directory .MPD_directory_children').empty();
-            }
+    function updateFiles(state,client){
+        if(client != getClient()){
+            return;
+        }
+        var element = $('.MPD_file_placeholder');
+        if(element.length){
+            //manually make the file root if it does not exsist
+            var contents = $($('#template_LIST_directory').html());
+            element.replaceWith(contents);
+        }
+        else{
+            //empty out anexsisting root
+            $('[data-tab_page=files] .LIST_directory .MPD_directory_children').empty();
+        }
 
-            //populate the file root
-            var root = $('[data-tab_page=files] .LIST_directory');
-            if(UI.last_clicked_file_element === null){
-                UI.last_clicked_file_element = root;
-            }
-            populateFileList(root);
-            //the root is treated differently than the rest of the oflders
-            //you can't close it and it shouldn't have the common tools
-            //because 'add all music' is a sort of dangerous button on root
-            root.addClass('expanded root');
-            root.find('.LIST_directory_path').html('Music Files');
-            root.find('.MPD_button').remove();
-            resetSearch(null, true);
-        }, 100);
+        //populate the file root
+        var root = $('[data-tab_page=files] .LIST_directory');
+        if(UI.last_clicked_file_element === null){
+            UI.last_clicked_file_element = root;
+        }
+        populateFileList(root);
+        //the root is treated differently than the rest of the oflders
+        //you can't close it and it shouldn't have the common tools
+        //because 'add all music' is a sort of dangerous button on root
+        root.addClass('expanded root');
+        root.find('.LIST_directory_path').html('Music Files');
+        root.find('.MPD_button').remove();
+        resetSearch(null, true);
     }
 
     /**
@@ -637,28 +638,23 @@ var UI = (function(){
         if(idx === UI.active_client){
             return;
         }
-        if(UI.clients[idx].isConnected()){
-            UI.active_client = idx;
-            var client = getClient();
+        UI.active_client = idx;
+        var client = getClient();
 
-            //Reset current song data. It's stange to keep the data if
-            //the new instance don't have a curent song
-            $('.MPD_controller_current_song_title').empty();
-            $('.MPD_controller_current_song_artist').empty();
-            $('.MPD_controller_current_song_album').empty();
-            $('.MPD_controller_current_song_time').empty();
-            $('.MPD_controller_current_song_duration').empty();
-            $('input.MPD_seek').prop('max',100);
-            $('input.MPD_seek').val(0);
+        //Reset current song data. It's stange to keep the data if
+        //the new instance don't have a curent song
+        $('.MPD_controller_current_song_title').empty();
+        $('.MPD_controller_current_song_artist').empty();
+        $('.MPD_controller_current_song_album').empty();
+        $('.MPD_controller_current_song_time').empty();
+        $('.MPD_controller_current_song_duration').empty();
+        $('input.MPD_seek').prop('max',100);
+        $('input.MPD_seek').val(0);
 
-            updateState(client.getState(), client);
-            updateQueue(client.getQueue(), client);
-            updatePlaylists(client.getPlaylists(), client);
-            updateOutputs(client.getOutputs(), client);
-        }
-        else{
-            alert("Error: cannot switch to a disconnected client");
-        }
+        updateState(client.getState(), client);
+        updateQueue(client.getQueue(), client);
+        updatePlaylists(client.getPlaylists(), client);
+        updateOutputs(client.getOutputs(), client);
     }
 
     /******************\
