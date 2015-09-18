@@ -1006,9 +1006,12 @@ function MPD(_port, _host){
     function onDisconnect(){
         log("disconnected");
 
+        callHandler('Disconnect', arguments);
+
         _private.state.connected = false;
         _private.socket = null;
         _private.state.version = null;
+        _private.commandHandlers = [];
         setInited(false);
 
         _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
@@ -1016,8 +1019,6 @@ function MPD(_port, _host){
         if(_private.reconnect_time){
             setTimeout(init, _private.reconnect_time);
         }
-
-        callHandler('Disconnect', arguments);
     }
 
 

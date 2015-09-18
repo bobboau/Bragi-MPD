@@ -68,6 +68,7 @@ template{
     background-color: rgba(0,0,0,0.5);
     color: red;
     text-align: center;
+    z-index: 2;
 }
 
 .MPD_disconnected > *{
