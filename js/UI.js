@@ -501,6 +501,7 @@ var UI = (function(){
         // we\the user tried to do something we are not allowed to do
         if(UI.clients.length === 1){
             var password = prompt('please enter a password');
+            localStorage.setItem('password_'+client.name, password);
             client.authorize(password);
         }
         else{
