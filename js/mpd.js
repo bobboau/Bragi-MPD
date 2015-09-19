@@ -12,8 +12,9 @@
  * @class
  * @param {Integer} [_port] - the portnumber our client should try to cennect to our winsockifyed MPD instance with
  * @param {String} [_host=document.URL] - hostname to try to connect to, defaults to the domain of the current page
+ * @param {String} [_password] - password to connect with (if needed)
  */
-function MPD(_port, _host){
+function MPD(_port, _host, _password){
 
     /**
      * this will be the final output interface, but it is used to refer to the client as a 'this' like object
@@ -30,8 +31,8 @@ function MPD(_port, _host){
      * @instance
      * @function
      * @throws {Error} an Error if you try to listen to an invalid event type
-     * @param {String} event_name - what sort of event to listen for. must be one of the following:  'Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'OutputChanged', 'StateChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'
-     * @param {disconnectEventHandler|connectEventHandler|playlistsChangedEventHandler|queueChangedEventHandler|outputChangedEventHandler|stateChangedEventHandler|dataLoadedEventHandler|databaseChangingEventHandler|unhandledEventHandler|eventHandler|errorEventHandler} handler - function called when the given event happens
+     * @param {String} event_name - what sort of event to listen for. must be one of the following:  'Error', 'Event', 'UnhandledEvent', 'AuthFailure', 'DatabaseChanging', 'DataLoaded', 'OutputChanged', 'StateChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'
+     * @param {errorEventHandler|disconnectEventHandler|connectEventHandler|playlistsChangedEventHandler|queueChangedEventHandler|outputChangedEventHandler|stateChangedEventHandler|dataLoadedEventHandler|databaseChangingEventHandler|unhandledEventHandler|eventHandler|errorEventHandler} handler - function called when the given event happens
      */
     self.on = on;
 
@@ -794,6 +795,19 @@ function MPD(_port, _host){
         });
     };
 
+    /**
+     * set the password for this client
+     * @instance
+     * @param {String}
+     */
+    self.authorize = function(password){
+        _password = password;
+        if(_private.state.connected){
+            //if we are not connected we will issue the password as part of our reconnection
+            issueCommands('password '+_password);
+        }
+    }
+
    /****************\
    |* private data *|
    \****************/
@@ -940,7 +954,12 @@ function MPD(_port, _host){
      /**
       * commands that are yet to be processed
       */
-     command_queue:[]
+     command_queue:[],
+
+     /**
+      *last error we had
+      */
+     last_error: null
    };
 
 
@@ -1049,7 +1068,7 @@ function MPD(_port, _host){
      * pass one command or an array of commands
      * a command can be in the form of a string, or a object
      * if a string is used as a command it will be assumed to have a 'do nothing' responce handler
-     * if an object is passed it must be in the form of {command:<String>, handler:function(String[])}
+     * if an object is passed it must be in the form of {command:<String>, handler:function(String[]), error:function(Error)}
      * this assumes we are starting in and wish to return to an idle state
      * @private
      */
@@ -1079,7 +1098,7 @@ function MPD(_port, _host){
     function processComandQueue(is_not_idling){
         var command_string = '';
 
-        if(_private.commandHandlers.length > 0 && _private.commandHandlers[0] !== idleHandler){
+        if(_private.commandHandlers.length > 0 && _private.commandHandlers[0].command !== 'idle'){
             //there are outstatnding commands being processed still, wait until the last batch finishes
             //we don't have to timeout call ourself because we will be called when the outstanding commands are done
             //if we are waiting on the idle handler then this doesn't count
@@ -1088,7 +1107,7 @@ function MPD(_port, _host){
 
         _private.command_queue.forEach(function(command){
             if(command instanceof Function){
-                command.post_command_function = true;
+                //case when we are given function, an 'on complete command'
                 //if we are given a function, it will be called when all previous commands are complete
                 _private.commandHandlers.push(command);
             }
@@ -1105,13 +1124,18 @@ function MPD(_port, _host){
                     command.handler = function(){};
                 }
 
+                //if it doesn't have a error handler give it the default error handler
+                if(typeof command.error === 'undefined'){
+                    command.error = defaultErrorHandler;
+                }
+
                 //now everything is normalized
 
                 //append the command
                 command_string += command.command+'\n';
 
                 //set the handler
-                _private.commandHandlers.push(command.handler);
+                _private.commandHandlers.push(command);
             }
         });
         _private.command_queue = [];
@@ -1122,14 +1146,19 @@ function MPD(_port, _host){
             //but do call all of those post comand functions
             _private.commandHandlers.forEach(function(func){
                 //this whole branch is weird, so lets just check to make sure these are all post comand functions
-                if(!func.post_command_function){
+                if(!func instanceof Function){
                     throw new Error('non-"post comand" function in commandHandlers when there was no command!');
                 }
                 func();
             });
         }
         else{
-            _private.commandHandlers.push(idleHandler);
+            var idle_command = {
+                command:'idle',
+                handler:idleHandler,
+                error:defaultErrorHandler
+            };
+            _private.commandHandlers.push(idle_command);
 
             command_string = 'command_list_ok_begin\n'+command_string+'idle\ncommand_list_end\n';
             if(!is_not_idling){
@@ -1140,21 +1169,30 @@ function MPD(_port, _host){
         }
     }
 
+    /**
+     * what to do by default if a command fails
+     */
+    function defaultErrorHandler(error){
+        var error_codes = MPD.getErrorCodes();
+        //if it's an error we know something about, maybe we can deal with it, otherwise just call registered handlers
+        switch(error.code){
+            case error_codes.ACK_ERROR_PASSWORD:
+            case error_codes.ACK_ERROR_PERMISSION:
+                // we\the user tried to do something they are not allowed to do
+                callHandler('AuthFailure', error, true);
+            break;
+            default:
+                debugger;
+                alert('***ERROR*** '+error.message);
+                callHandler('Error', error, true);
+            break;
+        }
+    }
+
 
     /*************************************\
     |* process responces from the server *|
     \*************************************/
-
-
-    /**
-     * we got some sort of error message from the server
-     * @private
-     */
-    function dealWithError(line){
-        debugger;
-        callHandler('Error', line);
-        log('***ERROR*** '+line);
-    }
 
 
     /**
@@ -1171,9 +1209,7 @@ function MPD(_port, _host){
                 break;
             }
             if(line.indexOf('ACK') === 0){
-                dealWithError(line);
-                lines.splice(i,1);
-                i--;
+                throw new Error('unexpected error');
             }
         }
 
@@ -1181,6 +1217,30 @@ function MPD(_port, _host){
             return null;
         }
         return lines.splice(0, end_line+1);
+    }
+
+
+    /**
+     * return error object if there is one, null otherwise
+     * MUTATES lines
+     * @private
+     */
+    function getError(lines){
+        var line = lines[0];
+        var error = null;
+        if(line.indexOf('ACK') === 0){
+            log('***ERROR*** '+line);
+            //parse the error into an object
+            error = line.match(/ACK \[(\d+)@(\d+)\] \{([^}]+)} (.*)/);
+            error = {
+                code: parseInt(error[1], 10),
+                line: parseInt(error[2], 10),
+                command: error[3],
+                message: error[4]
+            };
+            lines.splice(0,1);
+        }
+        return error;
     }
 
 
@@ -1252,7 +1312,9 @@ function MPD(_port, _host){
 
         _private.raw_lines.push.apply(_private.raw_lines,lines); //append these new lines to the running collection we have
 
-        lines.forEach(function(str){log('recived: "'+str+'"');}); //log what we got
+        if(_private.do_logging){
+            lines.forEach(function(str){log('recived: "'+str+'"');}); //log what we got
+        }
 
         return _private.raw_lines;
     }
@@ -1268,23 +1330,32 @@ function MPD(_port, _host){
     function onRawData(){
         var lines = getRawLines();
         //keep processing untill we can't process any more
+        var command_processor = null;
         var old_lines;//this is infinite loop prevention, should never actually happen
         while(lines.length > 0 && old_lines != lines.length){
             old_lines = lines.length;
 
-            var command_lines = getLines(lines, /^OK$|^list_OK$/);//get everything until the 'OK' line
-            if(command_lines === null){
-                //we have hit the end of the useable lines
-                break;
+            var error = getError(lines);
+            if(error){
+                //this command hit an error
+                command_processor = _private.commandHandlers.shift(); //get the next outstanding command processor
+                command_processor.error(error);
             }
-            command_lines.pop(); //get rid of the 'OK'
+            else{
+                var command_lines = getLines(lines, /^OK$|^list_OK$/);//get everything until the 'OK' line
+                if(command_lines === null){
+                    //we have hit the end of the useable lines
+                    break;
+                }
+                command_lines.pop(); //get rid of the 'OK'
 
-            command_processor = _private.commandHandlers.shift(); //get the next outstanding command processor
+                command_processor = _private.commandHandlers.shift(); //get the next outstanding command processor
 
-            command_processor(command_lines); //execure the processor on the results of the command
+                command_processor.handler(command_lines); //execure the processor on the results of the command
+            }
 
             //call everything we are supposed to just call
-            while(_private.commandHandlers.length > 0 && _private.commandHandlers[0].post_command_function){
+            while(_private.commandHandlers.length > 0 && _private.commandHandlers[0] instanceof Function){
                 _private.commandHandlers.shift()();
             }
         }
@@ -1315,6 +1386,10 @@ function MPD(_port, _host){
         _private.state.version = line.replace(/^OK MPD /, '');
 
         _private.responceProcessor = onRawData;
+
+        if(typeof _password !== 'undefined'){
+            issueCommands('password '+_password);
+        }
 
         //issue the commands that will (re)init this object
         loadEverything();
@@ -1623,23 +1698,28 @@ function MPD(_port, _host){
             [
                 {
                     command:'playlistinfo',
-                    handler:queueHandler
+                    handler:queueHandler,
+                    error:cancelLoad
                 },
                 {
                     command:'status',
-                    handler:stateHandler
+                    handler:stateHandler,
+                    error:cancelLoad
                 },
                 {
                     command:'tagtypes',
-                    handler:tagHandler
+                    handler:tagHandler,
+                    error:cancelLoad
                 },
                 {
                     command:'outputs',
-                    handler:outputHandler
+                    handler:outputHandler,
+                    error:cancelLoad
                 },
                 {
                     command:'listplaylists',
-                    handler:playlistsHandler
+                    handler:playlistsHandler,
+                    error:cancelLoad
                 },
                 function(){
                     setInited(true);
@@ -1648,6 +1728,17 @@ function MPD(_port, _host){
             ],
             reload === true
         );
+    }
+
+    /**
+     * deal with getting an error during initial data load
+     */
+    function cancelLoad(error){
+        _private.socket.close();
+        _private.commandHandlers = [];
+        _private.command_queue = [];
+        _private.state.connected = false;
+        defaultErrorHandler(error);
     }
 
 
@@ -1660,8 +1751,8 @@ function MPD(_port, _host){
      * call all event handlers for the specified event
      * @private
      */
-    function callHandler(event_name, args){
-        if(!_private.inited){
+    function callHandler(event_name, args, uncached){
+        if(!_private.inited && !uncached){
             var event_obj = {};
             event_obj[event_name] = args;
             _private.queued_events.push(event_obj);
@@ -1680,13 +1771,13 @@ function MPD(_port, _host){
                     func(args, self);
                 }
                 catch(err){
-                    dealWithError(err);
+                    callHandler('Error', err, true);
                 }
             });
         }
 
         if(event_name !== 'Event'){
-            callHandler('Event', {type:event_name, data:args});
+            callHandler('Event', {type:event_name, data:args}, uncached);
         }
     }
 
@@ -1697,7 +1788,7 @@ function MPD(_port, _host){
      */
     function on(event_name, handler){
 
-        var acceptable_handlers = ['Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'DataLoaded', 'StateChanged', 'OutputChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'];
+        var acceptable_handlers = ['Error', 'Event', 'UnhandledEvent', 'DatabaseChanging', 'AuthFailure', 'DataLoaded', 'StateChanged', 'OutputChanged', 'QueueChanged', 'PlaylistsChanged', 'PlaylistChanged','Connect', 'Disconnect'];
 
         if(acceptable_handlers.indexOf(event_name) === -1){
             throw new Error("'"+event_name+"' is not a supported event");
@@ -1870,6 +1961,35 @@ function MPD(_port, _host){
 
 };
 
+/******************\
+|* static methods *|
+\******************/
+
+/**
+ * return an enum that maps error numbers to something that is almost readable
+ * @instance
+ * @returns {Object}
+ */
+MPD.getErrorCodes = function(){
+    return {
+        ACK_ERROR_NOT_LIST: 1,
+        ACK_ERROR_ARG: 2,
+        ACK_ERROR_PASSWORD: 3,
+        ACK_ERROR_PERMISSION: 4,
+        ACK_ERROR_UNKNOWN: 5,
+        ACK_ERROR_NO_EXIST: 50,
+        ACK_ERROR_PLAYLIST_MAX: 51,
+        ACK_ERROR_SYSTEM: 52,
+        ACK_ERROR_PLAYLIST_LOAD: 53,
+        ACK_ERROR_UPDATE_ALREADY: 54,
+        ACK_ERROR_PLAYER_SYNC: 55,
+        ACK_ERROR_EXIST: 56
+    };
+};
+
+/******************\
+|* nested classes *|
+\******************/
 
 /**
  * A song that exsists in the MPD database
@@ -2510,6 +2630,15 @@ MPD.Output = function(client, source){
  * @param {Object} [responce_event] -
  * @param {MPD} client - the client that this event happened on
  */
+ /**
+  * event handler for 'AuthFailure' events
+  * when we get a responce from MPD that we aren't allowed to do something
+  * @event AuthFailure
+  * @type {Object}
+  * @callback errorEventHandler
+  * @param {Object} [responce_event] -
+  * @param {MPD} client - the client that this event happened on
+  */
 /**
  * generic event hander callback called when any sort of event happens
  * @event Event

@@ -48,6 +48,10 @@ var UI = (function(){
         CONFIG.clients.forEach(function(client_config, idx){
             var client = MPD(client_config.port, client_config.hostname);
 
+            if(idx === 0){
+                client.disableLogging();
+            }
+
             client.name = client_config.name;
             client.idx = idx;
 
@@ -64,6 +68,10 @@ var UI = (function(){
             client.on('Connect', onConnect);
 
             client.on('Disconnect', onDisconnect);
+
+            client.on('Error', onError);
+
+            client.on('AuthFailure', onAuthFailure);
 
             UI.clients.push(client);
         });
@@ -448,6 +456,23 @@ var UI = (function(){
         if(client == getClient()){
             $('.MPD_disconnected').css({display:''});
         }
+    }
+
+    /**
+     * called when an error happens
+     */
+    function onError(error, client){
+        debugger;
+        alert('***ERROR*** '+error.message);
+    }
+
+    /**
+     * called when some sort of permissions issue arizes
+     */
+    function onAuthFailure(error, client){
+        // we\the user tried to do something we are not allowed to do
+        var password = prompt('You are not Authorized. please enter your password');
+        client.authorize(password);
     }
 
     /**
