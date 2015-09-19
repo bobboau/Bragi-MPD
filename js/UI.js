@@ -46,14 +46,8 @@ var UI = (function(){
         setupInstances();
 
         CONFIG.clients.forEach(function(client_config, idx){
-            var client = MPD(client_config.port, client_config.hostname);
 
-            if(idx === 0){
-                client.disableLogging();
-            }
-
-            client.name = client_config.name;
-            client.idx = idx;
+            var client = setupClient(client_config, idx);
 
             client.on('StateChanged',updateState);
 
@@ -94,6 +88,38 @@ var UI = (function(){
     /*******************\
     |* private methods *|
     \*******************/
+
+    /**
+     * read from the config and make a client
+     */
+    function setupClient(client_config, idx){
+        var password = localStorage.getItem('password_'+client_config.name);
+        if(!password){
+            if(client_config.needs_auth){
+                password = prompt(client_config.name+" needs a password");
+                localStorage.setItem('password_'+client_config.name, password);
+            }
+        }
+        else{
+            client_config.needs_auth = true; //has a password, so it must have needed it at one point
+        }
+
+        if(!password){
+            password = undefined;
+        }
+        var client = MPD(client_config.port, client_config.hostname, password);
+
+        client.name = client_config.name;
+        client.idx = idx;
+        client.needs_auth = client_config.needs_auth;
+        if(client.needs_auth){
+            $('[data-instance_idx='+idx+'].INSTANCE_instance .INSTANCE_password').val(password);
+        }
+        else{
+            $('[data-instance_idx='+idx+'].INSTANCE_instance .INSTANCE_password').closest('tr').css({display:'none'});
+        }
+        return client
+    }
 
     /**
      * override a few of the MPD classes to add some additional functionality to them
@@ -470,9 +496,15 @@ var UI = (function(){
      * called when some sort of permissions issue arizes
      */
     function onAuthFailure(error, client){
+        var instance_element = $('[data-instance_idx='+client.idx+'].INSTANCE_instance');
+        var password =  localStorage.getItem('password_'+client.name);
         // we\the user tried to do something we are not allowed to do
-        var password = prompt('You are not Authorized. please enter your password');
-        client.authorize(password);
+        if(client === getClient() && client.last_failed_password != password ){
+            alert('Your password was rejected for '+client.name);
+        }
+        instance_element.find('.INSTANCE_password').closest('tr').css({display:''});
+        instance_element.find('.INSTANCE_password_message').html('(rejected)');
+        client.last_failed_password = password;
     }
 
     /**
@@ -1358,6 +1390,18 @@ var UI = (function(){
     }
 
     /**
+     * set a password for an instance
+     */
+    function setPassword(element){
+        var password = $(element).val();
+        var idx = $(element).closest('[data-instance_idx]').data('instance_idx');
+        var client = UI.clients[idx];
+        $(element).closest('[data-instance_idx]').find('.INSTANCE_password_message').html('');
+        localStorage.setItem('password_'+client.name, password);
+        client.authorize(password);
+    }
+
+    /**
      * turn this output on, and all the others off
      */
     function switchToOutput(element){
@@ -1525,6 +1569,7 @@ var UI = (function(){
         collapseSearch:collapseSearch,
         removeCurrenSong:removeCurrenSong,
         selectInstance:selectInstance,
+        setPassword:setPassword,
         switchToOutput:switchToOutput,
         enableOutput:enableOutput,
         disableOutput:disableOutput,

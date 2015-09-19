@@ -865,7 +865,7 @@ function MPD(_port, _host, _password){
       * true if we want logging turned on
       * @private
       */
-     do_logging: true,
+     do_logging: false,
 
      /**
       * Our understanding of what the server looks like
@@ -1388,7 +1388,10 @@ function MPD(_port, _host, _password){
         _private.responceProcessor = onRawData;
 
         if(typeof _password !== 'undefined'){
-            issueCommands('password '+_password);
+            issueCommands({
+                command:'password '+_password,
+                error:cancelLoad
+            });
         }
 
         //issue the commands that will (re)init this object

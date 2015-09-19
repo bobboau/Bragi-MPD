@@ -30,3 +30,7 @@
 .INSTANCE_instance th{
     text-align: right;
 }
+
+.INSTANCE_password_message{
+    margin-left: 1em;
+}
