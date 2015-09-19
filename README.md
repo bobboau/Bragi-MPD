@@ -10,7 +10,10 @@ Features
 
 Bragi aims to be a full featured MPD client, though it is work in progress and new features are always being added the goal is to leave no good feature unimplemented.
 
- * playback control (available in all interfaces)
+ * Responsive design
+  * fits mobile just as well as
+  * works on any modern bew browser from chrome to (recent versions of) IE to Safari (IOS and OSX) to Firefox
+ * Playback control (available in all interfaces)
   * play/pause
   * volume control
   * seek
@@ -68,6 +71,6 @@ Configuration
 
 Configuration is done in the config.js file. The default config file (default_config.js) has one instance on one host setup. If you wish to configure Bragi-MPD differently copy this file and rename it to just 'config.js' and it will override the default. The config file is basically a json object with a few sections.
 
-The first section is defined by the key 'instances'. this is the list of MPD instances that Bragi-MPD knows about and can control. If only one client is set up (as it is in the default config) the instances tab will not be shown in the interface, otherwise you will be able to switch which instance you are controlling in the instance tab. You can have as many instances as you want. Each instance allows you to specify a name (only used in the UI), port number (default 8800), and host name (if not specified it will use the root of the host name you loaded the page from).
+The first section is defined by the key 'instances'. This is the list of MPD instances that Bragi-MPD knows about and can control. If only one client is set up (as it is in the default config) the instances tab will not be shown in the interface, otherwise you will be able to switch which instance you are controlling in the instance tab. You can have as many instances as you want. Each instance allows you to specify a name (only used in the UI), port number (default 8800), and host name (if not specified it will use the root of the host name you loaded the page from).
 
 There is also a 'theme' section, here you can specify an array of additional css files to load. If the theme key is present it is expected to be an array full of strings which are URLs of css files (relative to the page's url). These additional files will be loaded following the normal files and will override them assuming they have equal or greater [specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity).
