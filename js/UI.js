@@ -499,12 +499,18 @@ var UI = (function(){
         var instance_element = $('[data-instance_idx='+client.idx+'].INSTANCE_instance');
         var password =  localStorage.getItem('password_'+client.name);
         // we\the user tried to do something we are not allowed to do
-        if(client === getClient() && client.last_failed_password != password ){
-            alert('Your password was rejected for '+client.name);
+        if(UI.clients.length === 1){
+            var password = prompt('please enter a password');
+            client.authorize(password);
         }
-        instance_element.find('.INSTANCE_password').closest('tr').css({display:''});
-        instance_element.find('.INSTANCE_password_message').html('(rejected)');
-        client.last_failed_password = password;
+        else{
+            if(client === getClient() && client.last_failed_password != password ){
+                alert('Your password was rejected for '+client.name);
+            }
+            instance_element.find('.INSTANCE_password').closest('tr').css({display:''});
+            instance_element.find('.INSTANCE_password_message').html('(rejected)');
+            client.last_failed_password = password;
+        }
     }
 
     /**
