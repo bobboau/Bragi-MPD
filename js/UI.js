@@ -45,6 +45,13 @@ var UI = (function(){
 
         setupInstances();
 
+        $(".LIST_queue_find_value").keyup(function(e){
+            queueFindchange(e.target, e);
+        });
+        $(".MPD_queue .LIST_contents").on('scroll', function(e){
+            $(".MPD_queue .LIST_contents .found").removeClass('found');
+        });
+
         CONFIG.clients.forEach(function(client_config, idx){
 
             var client = setupClient(client_config, idx);
@@ -763,6 +770,34 @@ var UI = (function(){
         }
     }
 
+    /**
+     * scrolls the given song
+     */
+    function scrollToSong(song_id, position){
+        var queue_element = $('.MPD_queue .LIST_content_container');
+        var song_element = $('.MPD_queue .LIST_content_container [data-mpd_queue_song_id='+song_id+']');
+
+        queue_element.animate({
+            scrollTop: queue_element.scrollTop() + song_element.position().top - queue_element.height()*position
+        }, 500);
+    }
+    
+    /**
+     * find songs on the queue
+     */
+    function queueFind(value){
+        value = value.toLowerCase();
+        //the songs on the queue that have the search criteria
+        return $('.MPD_queue .LIST_content_container .LIST_song')
+            .filter(function(){
+                return $(this).find('.LIST_song_title, .LIST_song_artist, .LIST_song_album')
+                    .filter(function(){
+                        return $(this).html().toLowerCase().indexOf(value) > -1;
+                    }
+                ).length > 0;
+            });
+    }
+
     /******************\
     |* public methods *|
     \******************/
@@ -925,13 +960,7 @@ var UI = (function(){
     function showCurrenSong(element){
         var mpd_client = getClient();
         var song_id = mpd_client.getCurrentSongID();
-
-        var queue_element = $('.MPD_queue .LIST_content_container');
-        var song_element = $('.MPD_queue .LIST_content_container [data-mpd_queue_song_id='+song_id+']');
-
-        queue_element.animate({
-            scrollTop: queue_element.scrollTop() + song_element.position().top - queue_element.height()/2
-        }, 500);
+        scrollToSong(song_id, 0.5);
     }
 
     /**
@@ -1533,6 +1562,127 @@ var UI = (function(){
         overlays.css({display:'none'});
     }
 
+    /**
+     * show the find uI hide the regular
+     */
+    function showQueueFind(element){
+        $('.MPD_queue .LIST_header.LIST_song_toolbar').css({display:'none'});
+        $('.MPD_queue .LIST_queue_find_toolbar').css({display:''});
+        $('.LIST_queue_find_value').focus();
+    }
+
+    /**
+     * hide the fine UI show the regular
+     */
+    function hideQueueFind(element){
+        $('.MPD_queue .LIST_header.LIST_song_toolbar').css({display:''});
+        $('.MPD_queue .LIST_queue_find_toolbar').css({display:'none'});
+    }
+
+    /**
+     * find things on the queue before what's shown
+     */
+    function queueFindPrev(element){
+        queueFindNext(element,true);
+    }
+
+    /**
+     * find things on the queue after what's shown
+     */
+    function queueFindNext(element, reverse){
+
+        var value = $('.LIST_queue_find_value').val();
+        if('' === value){
+            return;
+        }
+
+        var queue_element = $('.MPD_queue .LIST_content_container');
+
+        //the songs on the queue that have the search criteria
+        var songs = queueFind(value);
+        if(reverse){
+            songs = $(songs.get().reverse());
+        }
+
+        //if nothing was found do nothing
+        if(songs.length > 0){
+            //try to get songs after the queue's current offset
+            var after_songs = songs;
+            if(songs.filter('.found').length){
+                if(reverse){
+                    after_songs = songs.filter(':not(.found~*),:not(.found)');
+                }
+                else{
+                    after_songs = songs.filter('.found~*');
+                }
+            }
+            after_songs = after_songs.filter(function() {
+                if(reverse){
+                    return $(this).position().top < queue_element.position().top;
+                }
+                else{
+                    return $(this).position().top > queue_element.position().top;
+                }
+            });
+
+            var song_element = null;
+            //if nothing after go to the first one
+            if(after_songs.length > 0){
+                song_element = $(after_songs[0]);
+            }else{
+                song_element = $(songs[0]);
+            }
+            $('.MPD_queue .LIST_content_container .LIST_song').removeClass('found');
+            song_element.addClass('found');
+            scrollToSong(song_element.data('mpd_queue_song_id'), 0.5);
+        }
+    }
+
+    /**
+     * move to the next thing matching including what is on the screen already
+     */
+    function queueFindchange(element, event){
+
+        if(27 === event.which){
+            hideQueueFind(element);
+            return;
+        }
+
+        var value = $('.LIST_queue_find_value').val();
+        if('' === value){
+            return;
+        }
+
+        if(13 === event.which){
+            queueFindNext(element, event.shiftKey);
+            return;
+        }
+
+        var queue_element = $('.MPD_queue .LIST_content_container');
+
+        //the songs on the queue that have the search criteria
+        var songs = queueFind(value);
+
+        //if nothing was found do nothing
+        if(songs.length > 0){
+            //try to get songs after the queue's current offset
+            var after_songs = songs.filter(function() {
+                return $(this).position().top >= queue_element.position().top;
+            });
+
+            var song_element = null;
+            //if nothing after go to the first one
+            if(after_songs.length > 0){
+                song_element = $(after_songs[0]);
+            }else{
+                song_element = $(songs[0]);
+            }
+            $('.MPD_queue .LIST_content_container .LIST_song').removeClass('found');
+            song_element.addClass('found');
+            scrollToSong(song_element.data('mpd_queue_song_id'), 0.5);
+        }
+    }
+
     return {
         pushState:pushState,
         play:play,
@@ -1583,6 +1733,11 @@ var UI = (function(){
         moveItemUp:moveItemUp,
         moveItemDown:moveItemDown,
         moveItemStartReorder:moveItemStartReorder,
-        cancelReorder:cancelReorder
+        cancelReorder:cancelReorder,
+        showQueueFind:showQueueFind,
+        hideQueueFind:hideQueueFind,
+        queueFindPrev:queueFindPrev,
+        queueFindNext:queueFindNext,
+        queueFindchange:queueFindchange
     };
 })();

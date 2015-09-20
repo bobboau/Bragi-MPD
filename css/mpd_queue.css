@@ -55,3 +55,38 @@
     cursor: pointer;
     text-decoration: underline;
 }
+
+
+.LIST_queue_find_toolbar{
+    padding:0;
+}
+
+.LIST_queue_find.MPD_button{
+    background-image:  url(../img/magnifying-glass.svg);
+    background-position: left center;
+    padding-left: 2em;
+}
+
+.LIST_queue_find_quit.MPD_button{
+    background-image:  url(../img/x.svg);
+    background-position: left center;
+    padding-left: 2em;
+}
+
+.LIST_queue_find_prev.MPD_button{
+    background-image:  url(../img/chevron-left.svg);
+    background-position: left center;
+    padding-left: 2em;
+}
+
+.LIST_queue_find_next.MPD_button{
+    background-image:  url(../img/chevron-right.svg);
+    background-position: left center;
+    padding-left: 2em;
+    margin-left: 1em;
+}
+
+.LIST_queue_find_value{
+    width:100%;
+    padding:0;
+}

@@ -375,9 +375,16 @@ template for an output
                 <div class="MPD_queue LIST">
                     <ul class="LIST_header LIST_song_toolbar MPD_toolbar">
                         <li class="LIST_show_current MPD_button" onclick="UI.showCurrenSong(this);">Scroll to Current Song</li>
+                        <li class="LIST_queue_find MPD_button" onclick="UI.showQueueFind(this);">Find</li>
                         <li class="LIST_remove_current MPD_button" onclick="UI.removeCurrenSong(this);">Remove Current Song</li>
                         <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
                         <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
+                    </ul>
+                    <ul class="LIST_header LIST_queue_find_toolbar hbox" style="display:none;">
+                        <li class="LIST_queue_find_quit colapse MPD_button" onclick="UI.hideQueueFind(this);">&nbsp;</li>
+                        <li class="LIST_queue_find_prev colapse MPD_button" onclick="UI.queueFindPrev(this);">&nbsp;</li>
+                        <li><input class="LIST_queue_find_value" type="text"></input></li>
+                        <li class="LIST_queue_find_next colapse MPD_button" onclick="UI.queueFindNext(this);">&nbsp;</li>
                     </ul>
                     <div class="LIST_empty">
                         The Queue is empty!
