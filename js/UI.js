@@ -781,7 +781,7 @@ var UI = (function(){
             scrollTop: queue_element.scrollTop() + song_element.position().top - queue_element.height()*position
         }, 500);
     }
-    
+
     /**
      * find songs on the queue
      */
@@ -1568,6 +1568,7 @@ var UI = (function(){
     function showQueueFind(element){
         $('.MPD_queue .LIST_header.LIST_song_toolbar').css({display:'none'});
         $('.MPD_queue .LIST_queue_find_toolbar').css({display:''});
+        $('.LIST_queue_find_value').val('');
         $('.LIST_queue_find_value').focus();
     }
 
