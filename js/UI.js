@@ -195,7 +195,7 @@ var UI = (function(){
                     template_id = 'template_LIST_playlist_song';
                 }
                 var contents = getItemUI(template_id);
-                contents.attr('data-mpd_file_name', me.getPath());
+                contents.attr('data-mpd_file_path', me.getPath());
                 contents.attr('data-mpd_songlist_position', me.getPlaylistPosition());
                 return contents;
             }
@@ -217,7 +217,7 @@ var UI = (function(){
                     template_id = 'template_LIST_file_song';
                 }
                 var contents = getItemUI(template_id);
-                contents.attr('data-mpd_file_name', me.getPath());
+                contents.attr('data-mpd_file_path', me.getPath());
                 return contents;
             }
 
@@ -238,7 +238,7 @@ var UI = (function(){
                     template_id = 'template_LIST_file_song';
                 }
                 var contents = getItemUI(template_id);
-                contents.attr('data-mpd_file_name', me.getPath());
+                contents.attr('data-mpd_file_path', me.getPath());
                 return contents;
             }
 
@@ -1058,7 +1058,7 @@ var UI = (function(){
      * add a song by it's filename
      */
     function addSongToQueue(element){
-        getClient().addSongToQueueByFile(getData(element, 'mpd_file_name'));
+        getClient().addSongToQueueByFile(getData(element, 'mpd_file_path'));
     }
 
 
@@ -1344,7 +1344,7 @@ var UI = (function(){
     function appendSearchResultsToQueue(element){
         var result_element = $(element).parents('.MPD_search').find('.SEARCH_results');
         result_element.find('[data-mpd_file_path]').each(function(garbage,song_element){
-            getClient().addSongToQueueByFile($(song_element).data(mpd_file_path));
+            getClient().addSongToQueueByFile($(song_element).data('mpd_file_path'));
         });
     }
 
@@ -1357,8 +1357,8 @@ var UI = (function(){
             return;
         }
         var result_element = $(element).parents('.MPD_search').find('.SEARCH_results');
-        result_element.find('[data-mpd_file_name]').each(function(garbage,song_element){
-            getClient().addSongToPlaylistByFile(playlist, $(song_element).data('mpd_file_name'));
+        result_element.find('[data-mpd_file_path]').each(function(garbage,song_element){
+            getClient().addSongToPlaylistByFile(playlist, $(song_element).data('mpd_file_path'));
         });
     }
 
@@ -1370,7 +1370,7 @@ var UI = (function(){
         if(playlist === null){
             return;
         }
-        var song_path = $(element).closest('[data-mpd_file_name]').data('mpd_file_name');
+        var song_path = $(element).closest('[data-mpd_file_path]').data('mpd_file_path');
         getClient().addSongToPlaylistByFile(playlist, song_path);
     }
 
@@ -1379,7 +1379,7 @@ var UI = (function(){
      */
     function removeSongFromPlaylist(element){
         var playlist = getPlaylist(element);
-        var song_file = getData(element, 'mpd_file_name');
+        var song_file = getData(element, 'mpd_file_path');
         var song_position = getData(element, 'mpd_songlist_position');
         if(confirm('Are you sure you want to remove the song "'+song_file+'" from the Playlist "'+playlist.getName()+'"?')){
             playlist.removeSongByPosition(song_position);
