@@ -2458,9 +2458,16 @@ MPD.Playlist = function(client, source){
     }
 
     /**
+     * append to queue
+     */
+    me.appendToQueue = function(){
+        client.appendPlaylistToQueue(source.playlist);
+    }
+
+    /**
      * load into queue
      */
-    me.load = function(){
+    me.loadIntoQueue = function(){
         client.loadPlaylistIntoQueue(source.playlist);
     }
 

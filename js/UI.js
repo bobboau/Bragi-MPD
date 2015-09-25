@@ -901,9 +901,19 @@ var UI = (function(){
     /**
      * element -- the element that triggered the event (tells us which playlist to use)
      */
+    function appendPlaylist(element){
+        var playlist = getPlaylist(element);
+        playlist.appendToQueue();
+        $('.UI_main .TAB_control .TAB_button[data-tab_page=queue]').click();
+    }
+
+
+    /**
+     * element -- the element that triggered the event (tells us which playlist to use)
+     */
     function loadPlaylist(element){
         var playlist = getPlaylist(element);
-        playlist.load();
+        playlist.loadIntoQueue();
         $('.UI_main .TAB_control .TAB_button[data-tab_page=queue]').click();
     }
 
@@ -1694,6 +1704,7 @@ var UI = (function(){
         setVolume:setVolume,
         seek:seek,
         playQueueSong:playQueueSong,
+        appendPlaylist:appendPlaylist,
         loadPlaylist:loadPlaylist,
         selectPlaylist:selectPlaylist,
         removeCurrentQueueSong:removeCurrentQueueSong,

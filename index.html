@@ -400,7 +400,8 @@ template for an output
                 <div class="MPD_playlist LIST">
                     <ul class="LIST_header LIST_playlist_toolbar MPD_toolbar">
                         <select class="MPD_playlist_list" onchange="UI.selectPlaylist(this);"></select><br/>
-                        <li class="LIST_load_playlist MPD_button" onclick="UI.loadPlaylist(this);">Load Into Queue</li>
+                        <li class="LIST_append_playlist MPD_button" onclick="UI.appendPlaylist(this);">Append to Queue</li>
+                        <li class="LIST_replace_playlist MPD_button" onclick="UI.loadPlaylist(this);">Replace Queue</li>
                         <li class="LIST_delete_playlist MPD_button" onclick="UI.deletePlaylist(this);">Delete Playlist</li>
                         <li class="LIST_rename_playlist MPD_button" onclick="UI.renamePlaylist(this);">Rename Playlist</li>
                     </ul>

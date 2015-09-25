@@ -18,8 +18,15 @@
     margin-top: 1em;
 }
 
-.LIST_load_playlist.MPD_button{
+.LIST_append_playlist.MPD_button{
     background-image:  url(../img/plus.svg);
+    background-position: left center;
+    padding-left: 2.5em;
+    margin-left:1em;
+}
+
+.LIST_replace_playlist.MPD_button{
+    background-image:  url(../img/list.svg);
     background-position: left center;
     padding-left: 2.5em;
     margin-left:1em;
