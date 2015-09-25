@@ -1,6 +1,6 @@
 # Bragi-MPD
 
-Bragi-MPD a fully featured, HTML5, mobile friendly MPD web client made using [MPD.js](https://github.com/bobboau/MPD.js). Bragi-MPD is intended to allow you to play your music the way you want, wherever you are, and with any device capable of loading a web page. You can manage playlists, search your music database, or manually navigate your music files. Inherently multi-user friendly it is like it's namesake, great at parties.
+Bragi-MPD a fully featured, HTML5, mobile friendly MPD web client made using [MPD.js](https://github.com/bobboau/MPD.js). Bragi-MPD is intended to allow you to play your music the way you want, wherever you are, and with any device capable of loading a web page. You can manage playlists, search your music database, or manually navigate your music files. Inherently multi-user friendly it is like its namesake, great at parties.
 
 Bragi supports managing multiple outputs per MPD instance, and can be configured to manage multiple instances (on multiple hosts) making it ideally suited to controlling music on zoned sound systems.
 
@@ -11,7 +11,7 @@ Bragi aims to be a full featured MPD client, though it is work in progress and n
 
  * Responsive design
   * fits mobile just as well as
-  * works on any modern web browser from chrome to (recent versions of) IE to Safari (IOS and OSX) to Firefox
+  * works on any modern web browser from Chrome to (recent versions of) IE to Safari (iOS and OSX) to Firefox
  * Playback control (available in all interfaces)
   * play/pause
   * volume control
@@ -72,4 +72,4 @@ Configuration is done in the config.js file. The default config file (default_co
 
 The first section is defined by the key 'instances'. This is the list of MPD instances that Bragi-MPD knows about and can control. If only one client is set up (as it is in the default config) the instances tab will not be shown in the interface, otherwise you will be able to switch which instance you are controlling in the instance tab. You can have as many instances as you want. Each instance allows you to specify a name (only used in the UI), port number (default 8800), and host name (if not specified it will use the root of the host name you loaded the page from).
 
-There is also a 'theme' section, here you can specify an array of additional css files to load. If the theme key is present it is expected to be an array full of strings which are URLs of css files (relative to the page's url). These additional files will be loaded following the normal files and will override them assuming they have equal or greater [specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity).
+There is also a 'theme' section, here you can specify an array of additional CSS files to load. If the theme key is present it is expected to be an array full of strings which are URLs of css files (relative to the page's url). These additional files will be loaded following the normal files and will override them assuming they have equal or greater [specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity).
