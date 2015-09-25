@@ -11,7 +11,7 @@ Bragi aims to be a full featured MPD client, though it is work in progress and n
 
  * Responsive design
   * fits mobile just as well as
-  * works on any modern bew browser from chrome to (recent versions of) IE to Safari (IOS and OSX) to Firefox
+  * works on any modern web browser from chrome to (recent versions of) IE to Safari (IOS and OSX) to Firefox
  * Playback control (available in all interfaces)
   * play/pause
   * volume control
