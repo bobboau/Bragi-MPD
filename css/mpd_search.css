@@ -37,6 +37,8 @@ div.SEARCH_results_control{
 
 .SEARCH_control {
     padding: 1em;
+    white-space: nowrap;
+    overflow-x: auto;
 }
 
 .SEARCH_criteria_control{
@@ -86,6 +88,10 @@ div.SEARCH_results_control{
     margin-left: 1em;
 }
 
+.SEARCH_control input{
+    margin-left:1em;
+}
+
 
 .SEARCH_append_to_queue.MPD_button{
     background-image:  url(../img/plus.svg);
@@ -113,4 +119,8 @@ div.SEARCH_results_control{
     display: inline-block;
     margin: 0 0 0 1em;
     background-image:  url(../img/list.svg);
+}
+
+.hide_on_queue .on_queue{
+    display: none;
 }

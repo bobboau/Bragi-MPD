@@ -51,6 +51,15 @@ var UI = (function(){
         $(".MPD_queue .LIST_contents").on('scroll', function(e){
             $(".MPD_queue .LIST_contents .found").removeClass('found');
         });
+        $(".MPD_search form [name=hide_queue_songs]").on('click',function(){
+            var parent = $(this).closest('.MPD_search');
+            if($(this).is(':checked')){
+                parent.addClass('hide_on_queue');
+            }
+            else{
+                parent.removeClass('hide_on_queue');
+            }
+        });
 
         CONFIG.clients.forEach(function(client_config, idx){
 
@@ -401,6 +410,8 @@ var UI = (function(){
         while(UI.onChange.queue.length > 0){
             UI.onChange.queue.shift()();
         }
+
+        calculateOnQueueSearchResults();
     }
 
     /**
@@ -796,6 +807,26 @@ var UI = (function(){
                     }
                 ).length > 0;
             });
+    }
+
+
+    /**
+     * update the on_queue class of all the songs in search results
+     */
+    function calculateOnQueueSearchResults(){
+        var queue_songs = getClient().getQueue().getSongs().map(function(song){
+            return song.getPath();
+        });
+        $('.MPD_search .SEARCH_results .LIST_song').each(function(i,element){
+            element = $(element);
+            var song_path = element.data('mpd_file_path');
+            if(queue_songs.indexOf(song_path) === -1){
+                element.removeClass('on_queue');
+            }
+            else{
+                element.addClass('on_queue');
+            }
+        });
     }
 
     /******************\
@@ -1317,6 +1348,7 @@ var UI = (function(){
            results.forEach(function(result){
                $('.MPD_search .SEARCH_results').append(result.getItemUI());
            });
+           calculateOnQueueSearchResults();
        });
     }
 
