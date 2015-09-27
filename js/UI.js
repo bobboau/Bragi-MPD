@@ -41,6 +41,8 @@ var UI = (function(){
             });
         }
 
+        setupFeatureDisabling();
+
         overrideMpd();
 
         setupInstances();
@@ -104,6 +106,55 @@ var UI = (function(){
     /*******************\
     |* private methods *|
     \*******************/
+
+    /**
+     * go through the list of config features and add css rules for all disabled features
+     */
+    function setupFeatureDisabling(){
+        var disable_styles = '';
+        CONFIG.clients.forEach(function(config,idx){
+            var disabled_selectors = flattenFeatureConfig(config.disabled_features);
+            disabled_selectors.forEach(function(selector){
+                disable_styles += '\n[data-active_client="'+idx+'"] '+selector+'{\n\tdisplay:none !important;\n}\n'
+            });
+        });
+        if(disable_styles !== ''){
+            //if we got any, make a new style element in the head with the rules in them
+            $('head').append('<style>'+disable_styles+'</style>');
+        }
+    }
+
+    /**
+     * take a feature config object and return a simple set of css selectors
+     */
+    function flattenFeatureConfig(config){
+        if(typeof config === 'undefined'){
+            return [];
+        }
+        else if(typeof config === 'string' || config instanceof String){
+            return [config];
+        }
+        else if(Object.prototype.toString.call(config) === '[object Array]'){
+            return config;
+        }
+        else if(config === Object(config)){
+            var out = [];
+            for(var key in config){
+                var val = config[key];
+                if(typeof val === 'boolean'){
+                    out.push(key);
+                }
+                else{
+                    val = flattenFeatureConfig(val);
+                    out.push.apply(out,val.map(function(d){return key+' '+d;}));
+                }
+            }
+            return out;
+        }
+        else{
+            throw new Error('unsupported feature config format');
+        }
+    }
 
     /**
      * read from the config and make a client
@@ -305,6 +356,7 @@ var UI = (function(){
             connection_element.addClass('bad');
             $('.MPD_instances').append(contents);
         });
+        $('body').attr('data-active_client',0);
     }
 
     /**
@@ -779,6 +831,8 @@ var UI = (function(){
         else{
             $('.MPD_disconnected').css({display:''});
         }
+
+        $('body').attr('data-active_client',idx);
     }
 
     /**
