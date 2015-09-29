@@ -66,11 +66,14 @@ Explore your music library by a tag based drill down. Adding additional tags to 
 ![files](https://raw.githubusercontent.com/wiki/bobboau/Bragi-MPD/img/screenshots/Bragi-files.png)
 If you have your database organized in a way you like you can still get into the low level file structure. You are not penalized if you don't want to use the fancy pants search feature and just want to deal with the files directly. You can drill down into a directory and you are given a breadcrumb trail that both describes where you are in the directory tree and gives you a shortcut back to a higher level.
 
-![ouputs](https://raw.githubusercontent.com/wiki/bobboau/Bragi-MPD/img/screenshots/Bragi-ouputs.png)
+![ouputs](https://raw.githubusercontent.com/wiki/bobboau/Bragi-MPD/img/screenshots/Bragi-outputs.png)
 If you have more than one output defined for an instance the outputs tab will be present. Here you can turn them on and off. Someday if MPD supports it it would be nice to also set relative volume here, alas that has not yet been implemented in MPD yet.
 
 ![instances](https://raw.githubusercontent.com/wiki/bobboau/Bragi-MPD/img/screenshots/Bragi-instances.png)
 If you have more than one instance configured, here you can switch between them. Password management is also handled in this screen if you have more than one instance (if you just have one instance you will be prompted)
+
+![settings](https://raw.githubusercontent.com/wiki/bobboau/Bragi-MPD/img/screenshots/Bragi-settings.png)
+Basic MPD play settings can be controlled by Bgragi-MPD too.
 
 Installation and Setup
 ---------------------
