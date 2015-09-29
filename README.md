@@ -10,7 +10,7 @@ Features
 Bragi aims to be a full featured MPD client, though it is work in progress and new features are always being added the goal is to leave no good feature unimplemented.
 
  * Responsive design
-  * fits mobile just as well as
+  * fits mobile just as well as traditional desktop platforms
   * works on any modern web browser from Chrome to (recent versions of) IE to Safari (iOS and OSX) to Firefox
  * Playback control (available in all interfaces)
   * play/pause
