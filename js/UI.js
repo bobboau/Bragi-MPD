@@ -185,6 +185,9 @@ var UI = (function(){
         else{
             $('[data-instance_idx='+idx+'].INSTANCE_instance .INSTANCE_password').closest('tr').css({display:'none'});
         }
+        if(client_config.debug){
+            client.enableLogging();
+        }
         return client
     }
 
