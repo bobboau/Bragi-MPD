@@ -108,6 +108,18 @@ var UI = (function(){
     \*******************/
 
     /**
+     * make sure the given input is a string
+     */
+    function stringClean(str){
+        if(!str){
+            return '';
+        }
+        else{
+            return str+'';
+        }
+    }
+
+    /**
      * go through the list of config features and add css rules for all disabled features
      */
     function setupFeatureDisabling(){
@@ -384,9 +396,9 @@ var UI = (function(){
 
         var current_song = client.getCurrentSong();
         if(current_song){
-            $('.MPD_controller_current_song_title').html(current_song.getDisplayName());
-            $('.MPD_controller_current_song_artist').html(current_song.getArtist());
-            $('.MPD_controller_current_song_album').html(current_song.getAlbum());
+            $('.MPD_controller_current_song_title').html(stringClean(current_song.getDisplayName()));
+            $('.MPD_controller_current_song_artist').html(stringClean(current_song.getArtist()));
+            $('.MPD_controller_current_song_album').html(stringClean(current_song.getAlbum()));
 
             $('.MPD_queue [data-mpd_queue_song_id]').removeClass('selected');
             $('.MPD_queue [data-mpd_queue_song_id="'+client.getCurrentSongID()+'"]').addClass('selected');
