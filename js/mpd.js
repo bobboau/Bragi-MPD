@@ -314,6 +314,7 @@ function MPD(_port, _host, _password){
         return _private.outputs[id].outputenabled == 1;
     };
 
+
     /**
      * turns on the output specified by the id
      * @param {Integer} id -- the identifier of the output to turn on
@@ -1589,26 +1590,29 @@ function MPD(_port, _host, _password){
             case 'database': //the song database has been modified after update.
                 //reload
                 //everything
-                return 'everything';
+                return ['everything'];
             break;
 
             case 'stored_playlist': //a stored playlist has been modified, renamed, created or deleted, no idea which one
-                return 'playlist';
+                return ['playlist'];
             break;
 
             case 'playlist': //the current playlist has been modified
-                return 'queue';
+                return ['queue'];
             break;
 
             /*these are all status changed*/
             case 'player': //the player has been started, stopped or seeked
-            case 'mixer': //the volume has been changed
             case 'options': //options like repeat, random, crossfade, replay gain
-                return 'status';
+                return ['status'];
             break;
 
             case 'output': //an audio output has been enabled or disabled
-                return 'outputs';
+                return ['outputs'];
+            break;
+
+            case 'mixer': //the volume has been changed
+                return ['status','outputs'];
             break;
 
             /*these are things I'm not interested in (yet)*/
@@ -1620,6 +1624,7 @@ function MPD(_port, _host, _password){
             case 'message': //a message was received on a channel this client is subscribed to; this event is only emitted when the queue is empty
             default:
                 //default do nothing
+                return [];
         }
     }
 
@@ -1634,7 +1639,10 @@ function MPD(_port, _host, _password){
             var actions = {};
             lines.forEach(function(line){
                 var change = line.replace(/([^:]+): (.*)/,'$2');
-                actions[figureOutWhatToReload(change)] = true;
+                var changes = figureOutWhatToReload(change);
+                for(var i = 0; i<changes.length; i++){
+                    actions[changes[i]] = true;
+                }
             });
 
             if(actions.everything){

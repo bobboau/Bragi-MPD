@@ -1,6 +1,7 @@
 .MPD_outputs{
     height: 0;
     overflow-y: auto;
+    margin-left: 1em;
 }
 
 .OUTPUT_output{

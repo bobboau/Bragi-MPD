@@ -419,6 +419,15 @@ var UI = (function(){
         while(UI.onChange.state.length > 0){
             UI.onChange.state.shift()();
         }
+
+        if(document.hidden && updateState.last_state && updateState.last_state.current_song.id != state.current_song.id){
+            showNotification(
+                current_song.getDisplayName(),
+                'by: '+current_song.getArtist()
+            )
+        }
+
+        updateState.last_state = state;
     }
 
     /**
@@ -688,6 +697,32 @@ var UI = (function(){
     }
 
     /**
+     * maybe show a notification if they ever settle on a consistent API
+     */
+    function showNotification(title, body){
+        try{
+            if(Notification.permission === "granted" && localStorage.getItem('setting_notifications') == 'true'){
+                var n = new Notification(
+                    title,
+                    {
+                        body:body,
+                        icon: '/img/bragi-192.png'
+                    }
+                );
+                setTimeout(n.close.bind(n), 4000);
+
+                if(showNotification.last_notification){
+                    setTimeout(showNotification.last_notification.close.bind(showNotification.last_notification), 4);
+                }
+                showNotification.last_notification = n;
+            }
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
+
+    /**
      * given a number print out a nicer looking string with minutes/hours/seconds
      */
     function formatTime(seconds, precision){
@@ -823,7 +858,7 @@ var UI = (function(){
         UI.active_client = idx;
         var client = getClient();
 
-        //Reset current song data. It's stange to keep the data if
+        //Reset current song data. It's strange to keep the data if
         //the new instance don't have a curent song
         $('.MPD_controller_current_song_title').empty();
         $('.MPD_controller_current_song_artist').empty();
@@ -1292,6 +1327,12 @@ var UI = (function(){
                 value = Math.floor(value);
                 value = value?value:0;
                 getClient().setCrossfade(value);
+            break;
+            case 'notifications':
+                localStorage.setItem('setting_notifications', value?'true':'');
+                if(value==true && Notification.permission !== "granted"){
+                    Notification.requestPermission();
+                }
             break;
             default:
                 throw new Error('Unknown setting: "'+which_setting+'"');
