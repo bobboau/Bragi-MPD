@@ -1162,7 +1162,17 @@ var UI = (function(){
                 var content_ui = content.getItemUI();
                 if(content_ui.data('mpd_file_path')){
                     //this is only for directories
-                    var relative_path = content_ui.data('mpd_file_path').replace(path+'/', '');
+                    var file_path = content_ui.data('mpd_file_path');
+                    //if file_path is a number (e.g. "311"), we need to convert to a string first
+                    var relative_path = null;
+                    if( typeof(file_path) == "number" )
+                    {
+		      relative_path = file_path.toString().replace(path+'/', '');
+                    }
+                    else
+                    {
+                      relative_path = content_ui.data('mpd_file_path').replace(path+'/', '');
+                    }
                     content_ui.find('.LIST_directory_path').html(relative_path);
                 }
                 //append the directory to it's parent's children
