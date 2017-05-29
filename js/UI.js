@@ -1171,7 +1171,7 @@ var UI = (function(){
                     }
                     else
                     {
-                      relative_path = content_ui.data('mpd_file_path').replace(path+'/', '');
+                      relative_path = file_path.replace(path+'/', '');
                     }
                     content_ui.find('.LIST_directory_path').html(relative_path);
                 }
