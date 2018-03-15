@@ -82,6 +82,7 @@
 span.LIST_song_minor_information{
     flex-grow: 0;
     position: relative;
+    padding-bottom: 0.5em;
 }
 
 .LIST_song_property{
