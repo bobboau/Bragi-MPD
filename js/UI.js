@@ -191,12 +191,28 @@ var UI = (function(){
         client.name = client_config.name;
         client.idx = idx;
         client.needs_auth = client_config.needs_auth;
+
+        if(client_config.local_volume) {
+            client.local_volume = 1;
+        }
+        else{
+            client.local_volume = 0;
+        }
+
+        if(client_config.stream_port) {
+            client.stream_port = client_config.stream_port;
+        }
+        else{
+            client.stream_port = 0;
+        }
+
         if(client.needs_auth){
             $('[data-instance_idx='+idx+'].INSTANCE_instance .INSTANCE_password').val(password);
         }
         else{
             $('[data-instance_idx='+idx+'].INSTANCE_instance .INSTANCE_password').closest('tr').css({display:'none'});
         }
+
         if(client_config.debug){
             client.enableLogging();
         }
@@ -360,12 +376,28 @@ var UI = (function(){
             contents.attr('data-instance_idx', idx);
             contents.find('.INSTANCE_name').html(client_config.name);
             contents.find('.INSTANCE_port').html(client_config.port);
+
             if(client_config.hostname){
                 contents.find('.INSTANCE_host').html(client_config.hostname);
             }
             else{
                 contents.find('.INSTANCE_host').closest('tr').remove();
             }
+
+            if(client_config.stream_port){
+                contents.find('.INSTANCE_stream_port').html(client_config.stream_port);
+            }
+            else{
+                contents.find('.INSTANCE_stream_port').closest('tr').remove();
+            }
+
+            if(client_config.local_volume){
+                contents.find('.INSTANCE_local_volume').html('Yes');
+            }
+            else{
+                contents.find('.INSTANCE_local_volume').html('No');
+            }
+
             var connection_element = contents.find('.INSTANCE_connection_status');
             connection_element.html('Not Connected!');
             connection_element.addClass('bad');
@@ -381,17 +413,57 @@ var UI = (function(){
         if(client != getClient()){
             return;
         }
-        $('input.MPD_volume').val(client.getVolume());
 
-        if(client.getPlaystate() == 'play'){
+        var stream = $('audio.MPD_stream')[0];
+        if(client.stream_port){
+            var no_cache = '?no_cache=';
+            var current_url = stream.src.split(no_cache, 2)[0];
+            var new_url = 'http://' + client.getHost() + ':' + client.stream_port + '/';
+
+            //reload stream if changing instance (and thus url) or if there was an error that UI.streamError() gave up on
+            if((current_url != new_url) || stream.error){
+                stream.src = new_url + no_cache + Math.random() * 99999999;
+                stream.load();
+            }
+        }
+
+        var playing = (client.getPlaystate() == 'play');
+
+        var volume;
+        if(client.local_volume){
+            volume = localStorage.getItem('setting_local_volume');
+            if(volume === null){
+                volume = 0.5;
+            }
+            stream.volume = volume;
+
+            if(playing && stream.src && stream.paused){
+                //show the user that we don't have permission to play the stream by putting the slider at the bottom
+                volume = 0;
+            }
+        }
+        else{
+            volume = client.getVolume();
+        }
+        $('input.MPD_volume').val(volume);
+
+        if(playing){
             //show pause
             $('.MPD_play').hide();
             $('.MPD_pause').show();
+
+            //make sure the stream keeps playing
+            stream.play();
         }
         else{
             //show play
             $('.MPD_play').show();
             $('.MPD_pause').hide();
+
+            //stop the stream and prevent buffering by setting empty source.
+            //not ideal as this causes a delay when playing again.
+            //nevertheless, better than pausing and having sound totally out of sync when playing again.
+            stream.src = '';
         }
 
         var current_song = client.getCurrentSong();
@@ -865,8 +937,10 @@ var UI = (function(){
         $('.MPD_controller_current_song_album').empty();
         $('.MPD_controller_current_song_time').empty();
         $('.MPD_controller_current_song_duration').empty();
-        $('input.MPD_seek').prop('max',100);
+        $('input.MPD_seek').prop('max', 100);
         $('input.MPD_seek').val(0);
+
+        $('audio.MPD_stream').prop('src', '');
 
         //update the UI
         $('.INSTANCE_instance').removeClass('selected');
@@ -1021,7 +1095,23 @@ var UI = (function(){
      * element -- the element that triggered the event (tells us which client to use)
      */
     function setVolume(element){
-        getClient().setVolume($(element).val());
+        var client = getClient();
+        var volume = $(element).val();
+        var stream = $('audio.MPD_stream')[0];
+
+        //use volume slider to get permission to play on mobile
+        if(client.stream_port && stream.src){
+            stream.play();
+        }
+
+        if(client.local_volume){
+            stream.volume = volume;
+            localStorage.setItem('setting_local_volume', volume);
+        }
+        else{
+            stream.volume = 1;
+            client.setVolume(volume);
+        }
     }
 
 
@@ -1167,11 +1257,11 @@ var UI = (function(){
                     var relative_path = null;
                     if( typeof(file_path) == "number" )
                     {
-		      relative_path = file_path.toString().replace(path+'/', '');
+                        relative_path = file_path.toString().replace(path+'/', '');
                     }
                     else
                     {
-                      relative_path = file_path.replace(path+'/', '');
+                        relative_path = file_path.replace(path+'/', '');
                     }
                     content_ui.find('.LIST_directory_path').html(relative_path);
                 }
@@ -1575,8 +1665,7 @@ var UI = (function(){
      * what's playing now sucks, I don't want to hear it anymore
      */
     function removeCurrenSong(element){
-        var client = getClient();
-        client.removeSongFromQueueById(client.getCurrentSongID());
+        getClient().removeSongFromQueueById(client.getCurrentSongID());
     }
 
     /**
@@ -1846,6 +1935,27 @@ var UI = (function(){
         }
     }
 
+    /**
+     * handle stream errors
+     */
+    function streamError(stream){
+        var current_time = new Date().getTime();
+        if(typeof streamError.lastError == 'undefined'){
+            streamError.lastError = current_time;
+        }
+        //reset error counter when last error is more than 1 minute ago
+        if((typeof streamError.errorCounter == 'undefined') || (current_time - streamError.lastError > 60000)){
+            streamError.errorCounter = 0;
+        }
+
+        //reload the stream only if it has a source and it seems online
+        if(stream.src && (streamError.errorCounter < 10)){
+            streamError.errorCounter++;
+            stream.load();
+            stream.play();
+        }
+    }
+
     return {
         pushState:pushState,
         play:play,
@@ -1902,6 +2012,7 @@ var UI = (function(){
         hideQueueFind:hideQueueFind,
         queueFindPrev:queueFindPrev,
         queueFindNext:queueFindNext,
-        queueFindchange:queueFindchange
+        queueFindchange:queueFindchange,
+        streamError:streamError
     };
 })();
