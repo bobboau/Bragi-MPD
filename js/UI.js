@@ -429,24 +429,6 @@ var UI = (function(){
 
         var playing = (client.getPlaystate() == 'play');
 
-        var volume;
-        if(client.local_volume){
-            volume = localStorage.getItem('setting_local_volume');
-            if(volume === null){
-                volume = 0.5;
-            }
-            stream.volume = volume;
-
-            if(playing && stream.src && stream.paused){
-                //show the user that we don't have permission to play the stream by putting the slider at the bottom
-                volume = 0;
-            }
-        }
-        else{
-            volume = client.getVolume();
-        }
-        $('input.MPD_volume').val(volume);
-
         if(playing){
             //show pause
             $('.MPD_play').hide();
@@ -465,6 +447,24 @@ var UI = (function(){
             //nevertheless, better than pausing and having sound totally out of sync when playing again.
             stream.src = '';
         }
+
+        var volume;
+        if(client.local_volume){
+            volume = localStorage.getItem('setting_local_volume');
+            if(volume === null){
+                volume = 0.5;
+            }
+            stream.volume = volume;
+
+            if(playing && stream.src && stream.paused){
+                //show the user that we don't have permission to play the stream by putting the slider at the bottom
+                volume = 0;
+            }
+        }
+        else{
+            volume = client.getVolume();
+        }
+        $('input.MPD_volume').val(volume);
 
         var current_song = client.getCurrentSong();
         if(current_song){
