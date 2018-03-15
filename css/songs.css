@@ -51,11 +51,28 @@
 .LIST_song .LIST_song_path{
     font-size: 0.75em;
     text-align: right;
+    position: absolute;
+    right: 0;
+    float: right;
+    max-width: 24em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.LIST_song .LIST_song_path:hover{
+    max-width: none;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    -khtml-user-select: auto;
+    -webkit-user-select: auto;
+    user-select: auto;
+    cursor: auto;
 }
 
 .LIST_song .LIST_song_path::before{
     content: "File: ";
-    font-size: 0.6em;
+    font-size: 0.8em;
 }
 
 .LIST_song .LIST_song_title{
@@ -64,6 +81,7 @@
 
 span.LIST_song_minor_information{
     flex-grow: 0;
+    position: relative;
 }
 
 .LIST_song_property{
