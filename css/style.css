@@ -1,6 +1,6 @@
 @font-face {
     font-family: default_font;
-    src: url(/img/DejaVuSans.ttf)
+    src: url(../img/DejaVuSans.ttf)
 }
 
 html, body{
@@ -24,7 +24,7 @@ html, body{
 }
 
 /*for browsers that don't support this properly*/
-template{
+template, audio{
     display:none;
 }
 

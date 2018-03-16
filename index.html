@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <title>Bragi MPD</title>
-    <link rel='shortcut icon' href='/img/favicon.ico' type='image/x-icon'/>
+    <link rel='shortcut icon' href='img/favicon.ico' type='image/x-icon'/>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="shortcut icon" sizes="192x192" href="/img/bragi-192.png">
-    <link rel="shortcut icon" sizes="128x128" href="/img/bragi-128.png">
-    <link rel="apple-touch-icon" sizes="128x128" href="/img/bragi-128.png">
-    <link rel="apple-touch-icon-precomposed" sizes="128x128" href="/img/bragi-128.png">
+    <link rel="shortcut icon" sizes="192x192" href="img/bragi-192.png">
+    <link rel="shortcut icon" sizes="128x128" href="img/bragi-128.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="img/bragi-128.png">
+    <link rel="apple-touch-icon-precomposed" sizes="128x128" href="img/bragi-128.png">
 
     <link rel="stylesheet" href="css/normalize.css"/>
     <link rel="stylesheet" href="css/firefox.css"/>
@@ -274,6 +274,8 @@ template for an instance
                 <tr><th>Host Name:</th><td class="INSTANCE_host"></td></tr>
                 <tr><th>Connection Status:</th><td class="INSTANCE_connection_status"></td></tr>
                 <tr><th>Password</th><td><input class="INSTANCE_password" type="password" onchange="UI.setPassword(this);"></input><span class="INSTANCE_password_message bad"></span></td></tr>
+                <tr><th>Stream port:</th><td class="INSTANCE_stream_port"></td></tr>
+                <tr><th>Local volume:</th><td class="INSTANCE_local_volume"></td></tr>
             </table>
         </div>
     </template>
@@ -310,6 +312,8 @@ template for an output
 < play/pause/seek/volume it's all right here
 -->
             <div class="MPD_controller hbox">
+                <audio class="MPD_stream" onended="UI.streamError(this);" onerror="UI.streamError(this);">
+                </audio>
                 <div class="MPD_play MPD_button" onclick="UI.play();"></div>
                 <div class="MPD_pause MPD_button" onclick="UI.pause();"></div>
                 <div class="MPD_controller_middle_controls vbox">
