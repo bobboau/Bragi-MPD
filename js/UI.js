@@ -186,7 +186,7 @@ var UI = (function(){
         if(!password){
             password = undefined;
         }
-        var client = MPD(client_config.port, client_config.hostname.toString().trim(), password);
+        var client = MPD(client_config.port, client_config.hostname, password);
 
         client.name = client_config.name;
         client.idx = idx;
@@ -201,9 +201,13 @@ var UI = (function(){
 
         if(client_config.stream_port) {
             client.stream_port = client_config.stream_port;
+            //sometimes MPD.getHost() returns protocol and port, so we need to get rid of those
+            var hostname = client.getHost().toLowerCase().replace('http://', '').replace('https://', '').split(':')[0];
+            client.stream_url = 'http://' + hostname + ':' + client.stream_port + '/';
         }
         else{
             client.stream_port = 0;
+            client.stream_url = '';
         }
 
         if(client.needs_auth){
@@ -418,13 +422,10 @@ var UI = (function(){
         if(client.stream_port){
             var no_cache = '?no_cache=';
             var current_url = stream.src.split(no_cache, 2)[0];
-            //sometimes MPD.getHost() returns protocol and port, so we need to get rid of those
-            var hostname = client.getHost().toLowerCase().replace('http://', '').replace('https://', '').split(':')[0];
-            var new_url = 'http://' + hostname + ':' + client.stream_port + '/';
 
             //reload stream if changing instance (and thus url) or if there was an error that UI.streamError() gave up on
-            if((current_url != new_url) || stream.error){
-                stream.src = new_url + no_cache + Math.random() * 99999999;
+            if((current_url != client.stream_url) || stream.error){
+                stream.src = client.stream_url + no_cache + Math.random() * 99999999;
                 stream.load();
             }
         }
