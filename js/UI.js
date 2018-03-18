@@ -193,10 +193,10 @@ var UI = (function(){
         client.needs_auth = client_config.needs_auth;
 
         if(client_config.local_volume) {
-            client.local_volume = 1;
+            client.local_volume = true;
         }
         else{
-            client.local_volume = 0;
+            client.local_volume = false;
         }
 
         if(client_config.stream_port) {
@@ -495,7 +495,7 @@ var UI = (function(){
             UI.onChange.state.shift()();
         }
 
-        if(document.hidden && updateState.last_state && updateState.last_state.current_song.id != state.current_song.id){
+        if(document.hidden && current_song && updateState.last_state && updateState.last_state.current_song.id != state.current_song.id){
             showNotification(
                 current_song.getDisplayName(),
                 'by: '+current_song.getArtist()
@@ -658,7 +658,15 @@ var UI = (function(){
      */
     function onError(error, client){
         debugger;
-        alert('***ERROR*** '+error.message);
+        var msg = '***ERROR*** ' + error.message;
+        if(error.stack){
+            msg += '\n' + error.stack;
+        }
+        else if(error.lineNumber && error.fileName){
+            msg += '\non line ' + error.lineNumber + '\n';
+            msg += 'of file ' + error.fileName;
+        }
+        alert(msg);
     }
 
     /**
@@ -1941,19 +1949,19 @@ var UI = (function(){
     /**
      * handle stream errors
      */
-    function streamError(stream){
+    function onStreamError(stream){
         var current_time = new Date().getTime();
-        if(typeof streamError.lastError == 'undefined'){
-            streamError.lastError = current_time;
+        if(typeof onStreamError.last_error == 'undefined'){
+            onStreamError.last_error = current_time;
         }
         //reset error counter when last error is more than 1 minute ago
-        if((typeof streamError.errorCounter == 'undefined') || (current_time - streamError.lastError > 60000)){
-            streamError.errorCounter = 0;
+        if((typeof onStreamError.error_counter == 'undefined') || (current_time - onStreamError.last_error > 60000)){
+            onStreamError.errorCounter = 0;
         }
 
         //reload the stream only if it has a source and it seems online
-        if(stream.src && (streamError.errorCounter < 10)){
-            streamError.errorCounter++;
+        if(stream.src && (onStreamError.error_counter < 10)){
+            onStreamError.error_counter++;
             stream.load();
             stream.play();
         }
@@ -2016,6 +2024,6 @@ var UI = (function(){
         queueFindPrev:queueFindPrev,
         queueFindNext:queueFindNext,
         queueFindchange:queueFindchange,
-        streamError:streamError
+        onStreamError:onStreamError
     };
 })();
