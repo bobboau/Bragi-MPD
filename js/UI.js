@@ -1130,7 +1130,10 @@ var UI = (function(){
      * element -- the element that triggered the event (tells us which client to use)
      */
     function seek(element){
-        getClient().seek($(element).val());
+        var client = getClient();
+		if(client.getCurrentSong()){
+            client.seek($(element).val());
+        }
     }
 
 
