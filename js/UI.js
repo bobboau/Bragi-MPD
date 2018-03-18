@@ -1956,7 +1956,7 @@ var UI = (function(){
         }
         //reset error counter when last error is more than 1 minute ago
         if((typeof onStreamError.error_counter == 'undefined') || (current_time - onStreamError.last_error > 60000)){
-            onStreamError.errorCounter = 0;
+            onStreamError.error_counter = 0;
         }
 
         //reload the stream only if it has a source and it seems online
