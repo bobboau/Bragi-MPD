@@ -419,36 +419,33 @@ var UI = (function(){
         }
 
         var stream = $('audio.MPD_stream')[0];
-        if(client.stream_port){
+        var playing = (client.getPlaystate() == 'play');
+
+        if(client.stream_port && playing){
             var no_cache = '?no_cache=';
             var current_url = stream.src.split(no_cache, 2)[0];
 
-            //reload stream if changing instance (and thus url) or if there was an error that UI.streamError() gave up on
-            if((current_url != client.stream_url) || stream.error){
+            if(current_url != client.stream_url){
                 stream.src = client.stream_url + no_cache + Math.random() * 99999999;
-                stream.load();
             }
-        }
 
-        var playing = (client.getPlaystate() == 'play');
+            //make sure the stream keeps playing. UI.streamError() might give up, so try playing now that state has changed
+            playStream(stream);
+        }
+        else{
+            //no point in having the stream playing now
+            stopStream(stream);
+        }
 
         if(playing){
             //show pause
             $('.MPD_play').hide();
             $('.MPD_pause').show();
-
-            //make sure the stream keeps playing
-            stream.play();
         }
         else{
             //show play
             $('.MPD_play').show();
             $('.MPD_pause').hide();
-
-            //stop the stream and prevent buffering by setting empty source.
-            //not ideal as this causes a delay when playing again.
-            //nevertheless, better than pausing and having sound totally out of sync when playing again.
-            stream.src = '';
         }
 
         var volume;
@@ -951,7 +948,7 @@ var UI = (function(){
         $('input.MPD_seek').prop('max', 100);
         $('input.MPD_seek').val(0);
 
-        $('audio.MPD_stream').prop('src', '');
+        stopStream($('audio.MPD_stream')[0]);
 
         //update the UI
         $('.INSTANCE_instance').removeClass('selected');
@@ -1111,9 +1108,7 @@ var UI = (function(){
         var stream = $('audio.MPD_stream')[0];
 
         //use volume slider to get permission to play on mobile
-        if(client.stream_port && stream.src){
-            stream.play();
-        }
+        playStream(stream);
 
         if(client.local_volume){
             stream.volume = volume;
@@ -1131,7 +1126,7 @@ var UI = (function(){
      */
     function seek(element){
         var client = getClient();
-		if(client.getCurrentSong()){
+        if(client.getCurrentSong()){
             client.seek($(element).val());
         }
     }
@@ -1950,24 +1945,54 @@ var UI = (function(){
     }
 
     /**
-     * handle stream errors
+     * play stream, handling promises to avoid spamming the console with errors
+     */
+    function playStream(stream){
+        if(!stream.src){
+            return;
+        }
+
+        stream.load();
+
+        var promise = stream.play();
+        if(promise !== undefined){
+            promise.then();
+        }
+    }
+
+    /**
+     * stop stream and prevent buffering by setting empty source.
+     * not ideal as this causes a delay when playing again.
+     * nevertheless, better than pausing and having sound totally out of sync when playing again.
+     */
+    function stopStream(stream){
+        stream.pause();
+        if(stream.src){
+            stream.src = '';
+        }
+    }
+
+    /**
+     * handle stream errors by retrying up to 10 times a minute
      */
     function onStreamError(stream){
-        var current_time = new Date().getTime();
         if(typeof onStreamError.last_error == 'undefined'){
-            onStreamError.last_error = current_time;
+            onStreamError.last_error = 0;
         }
-        //reset error counter when last error is more than 1 minute ago
-        if((typeof onStreamError.error_counter == 'undefined') || (current_time - onStreamError.last_error > 60000)){
+
+        //reset error counter when last error is more than 1 minute ago (or never)
+        var current_time = new Date().getTime();
+        if(current_time - onStreamError.last_error > 60000){
             onStreamError.error_counter = 0;
         }
 
-        //reload the stream only if it has a source and it seems online
-        if(stream.src && (onStreamError.error_counter < 10)){
-            onStreamError.error_counter++;
-            stream.load();
-            stream.play();
+        if(onStreamError.error_counter >= 10){
+            return;
         }
+
+        onStreamError.last_error = current_time;
+        onStreamError.error_counter++;
+        playStream(stream);
     }
 
     return {
