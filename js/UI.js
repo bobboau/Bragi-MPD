@@ -1948,7 +1948,7 @@ var UI = (function(){
      * play stream, handling promises to avoid spamming the console with errors
      */
     function playStream(stream){
-        if(!stream.src){
+        if(!stream.src || !stream.paused){
             return;
         }
 
