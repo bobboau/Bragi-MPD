@@ -842,7 +842,7 @@ var UI = (function(){
         function updateMarqueEffect(element){
             if(!element.updating){
                 if(!element.timer){
-                    element.timer =setTimeout(function(){
+                    element.timer = setTimeout(function(){
                         element.updating = true;
                         $(element).find('.copy').remove();
                         if($(element).width() < $(element).children().width()){
@@ -1962,7 +1962,7 @@ var UI = (function(){
 
     /**
      * stop stream and prevent buffering by setting empty source.
-     * not ideal as this causes a delay when playing again.
+     * not ideal as this causes a slight delay when playing again.
      * nevertheless, better than pausing and having sound totally out of sync when playing again.
      */
     function stopStream(stream){
@@ -1973,9 +1973,11 @@ var UI = (function(){
     }
 
     /**
-     * handle stream errors by retrying up to 10 times a minute
+     * handle stream errors by retrying 2 seconds later up to 10 times a minute
      */
     function onStreamError(stream){
+        stream.pause();
+
         if(typeof onStreamError.last_error == 'undefined'){
             onStreamError.last_error = 0;
         }
@@ -1986,13 +1988,16 @@ var UI = (function(){
             onStreamError.error_counter = 0;
         }
 
-        if(onStreamError.error_counter >= 10){
+        if(onStreamError.error_counter >= 10 || onStreamError.timer){
             return;
         }
 
         onStreamError.last_error = current_time;
         onStreamError.error_counter++;
-        playStream(stream);
+        onStreamError.timer = setTimeout(function(){
+            onStreamError.timer = null;
+            playStream(stream);
+        }, 2000);
     }
 
     return {
