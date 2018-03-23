@@ -91,16 +91,21 @@ var UI = (function(){
 
         setInterval(function(){
             updatePlaytime(getClient());
-        },150);
+        }, 250);
 
         if(!mobileCheck()){
             setInterval(function(){
                 updatePageTitle(getClient());
-            },250);
+            }, 250);
         }
 
         //setup event handlers for marque elements
         setupMarque();
+
+        //initialize 'static' variables here so we don't have to check if they're set all the time
+        updatePageTitle.offset = 0;
+        seek.last_seek = 0;
+        onStreamError.last_error = 0;
     }
 
     /*******************\
@@ -422,14 +427,7 @@ var UI = (function(){
         var playing = (client.getPlaystate() == 'play');
 
         if(client.stream_port && playing){
-            var no_cache = '?no_cache=';
-            var current_url = stream.src.split(no_cache, 2)[0];
-
-            if(current_url != client.stream_url){
-                stream.src = client.stream_url + no_cache + Math.random() * 99999999;
-            }
-
-            //make sure the stream keeps playing. UI.streamError() might give up, so try playing now that state has changed
+            //make sure the stream keeps playing. UI.streamError() gives up after a few errors, so try playing now that state has changed
             playStream(stream);
         }
         else{
@@ -674,7 +672,7 @@ var UI = (function(){
         var password =  localStorage.getItem('password_'+client.name);
         // we\the user tried to do something we are not allowed to do
         if(UI.clients.length === 1){
-            var password = prompt('please enter a password');
+            var password = prompt('Please enter password for '+client.name);
             localStorage.setItem('password_'+client.name, password);
             client.authorize(password);
         }
@@ -695,7 +693,10 @@ var UI = (function(){
         var current_song = client.getCurrentSong();
         if(current_song){
             //there is a mix of div/span/td type html and input/select typeelements
-            $('input.MPD_seek').val(Math.round(client.getCurrentSongTime()));
+            if(getTime() - seek.last_seek > 2) {
+                //update the seekbar only if the user hasn't touched it in a bit
+                $('input.MPD_seek').val(Math.round(client.getCurrentSongTime()));
+            }
             var formatted_time = formatTime(client.getCurrentSongTime());
             $('.MPD_controller_current_song_time').html(formatted_time);
         }
@@ -714,9 +715,6 @@ var UI = (function(){
      * update our UI for ticking of play time
      */
     function updatePageTitle(client){
-        if(typeof updatePageTitle.offset === 'undefined'){
-            updatePageTitle.offset = 0;
-        }
         var current_song = client.getCurrentSong();
         if(current_song){
             var title = current_song.getDisplayName()+' - ';
@@ -1126,8 +1124,11 @@ var UI = (function(){
      */
     function seek(element){
         var client = getClient();
-        if(client.getCurrentSong()){
+        var current_time = getTime();
+        if(client.getCurrentSong() && current_time - seek.last_seek >= 1){
+            //seek only once per second at most to avoid filling the MPD.js queue with seek commands
             client.seek($(element).val());
+            seek.last_seek = current_time;
         }
     }
 
@@ -1945,11 +1946,26 @@ var UI = (function(){
     }
 
     /**
-     * play stream, handling promises to avoid spamming the console with errors
+     * utility function, returns current time in seconds
+     */
+    function getTime(stream){
+        return new Date().getTime() / 1000;
+    }
+
+    /**
+     * play stream, changing the url if needed and handling promises to avoid spamming the console with errors
      */
     function playStream(stream){
-        if(!stream.src || !stream.paused){
+        if(!stream.paused){
             return;
+        }
+
+        var client = getClient();
+        var no_cache = '?no_cache=';
+        var current_url = stream.src.split(no_cache, 2)[0];
+
+        if(current_url != client.stream_url){
+            stream.src = client.stream_url + no_cache + Math.random() * 99999999;
         }
 
         stream.load();
@@ -1961,9 +1977,7 @@ var UI = (function(){
     }
 
     /**
-     * stop stream and prevent buffering by setting empty source.
-     * not ideal as this causes a slight delay when playing again.
-     * nevertheless, better than pausing and having sound totally out of sync when playing again.
+     * stop stream and prevent buffering by setting empty source
      */
     function stopStream(stream){
         stream.pause();
@@ -1973,31 +1987,34 @@ var UI = (function(){
     }
 
     /**
-     * handle stream errors by retrying 2 seconds later up to 10 times a minute
+     * handle stream errors by retrying up to 10 times in 2 minutes, with increasing delay
      */
     function onStreamError(stream){
-        stream.pause();
+        //stop stream completely to make sure that playStream() will do its thing and to give the network some idle time until we actually retry
+        stopStream(stream);
 
-        if(typeof onStreamError.last_error == 'undefined'){
-            onStreamError.last_error = 0;
-        }
-
-        //reset error counter when last error is more than 1 minute ago (or never)
-        var current_time = new Date().getTime();
-        if(current_time - onStreamError.last_error > 60000){
+        //reset error counter when last error is more than 2 minutes ago
+        var current_time = getTime();
+        if(current_time - onStreamError.last_error > 120){
             onStreamError.error_counter = 0;
         }
 
+        //don't retry if error limit was reached or if we're already about to retry
         if(onStreamError.error_counter >= 10 || onStreamError.timer){
+            console.log('Stream error, not retrying');
             return;
         }
 
         onStreamError.last_error = current_time;
         onStreamError.error_counter++;
+        console.log('Stream error ' + onStreamError.error_counter);
+
+        //retry with delay
         onStreamError.timer = setTimeout(function(){
-            onStreamError.timer = null;
+            console.log('Stream retry ' + onStreamError.error_counter);
             playStream(stream);
-        }, 2000);
+            onStreamError.timer = null;
+        }, 2000 * onStreamError.error_counter);
     }
 
     return {

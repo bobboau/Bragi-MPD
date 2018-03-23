@@ -74,10 +74,10 @@ If you have more than one output defined for an instance the outputs tab will be
 If you have more than one instance configured, here you can switch between them. Password management is also handled in this screen if you have more than one instance (if you just have one instance you will be prompted)
 
 ![settings](https://raw.githubusercontent.com/wiki/bobboau/Bragi-MPD/img/screenshots/Bragi-settings.png)
-Basic MPD play settings can be controlled by Bgragi-MPD too.
+Basic MPD play settings can be controlled by Bragi-MPD too.
 
 Installation and Setup
----------------------
+----------------------
 
 You must have a [working installation of MPD](http://www.musicpd.org/doc/user/) for many Linux distributions this is little more than 'apt-get install mpd'.
 
@@ -101,3 +101,21 @@ The first section is defined by the key 'clients'. This is the list of MPD insta
 There is also a 'theme' section, here you can specify an array of additional CSS files to load. If the theme key is present it is expected to be an array full of strings which are URLs of css files (relative to the page's url). These additional files will be loaded following the normal files and will override them assuming they have equal or greater [specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity).
 
 For more config details see the [wiki page](https://github.com/bobboau/Bragi-MPD/wiki/Configuration)
+
+MPD configuration for streaming
+-------------------------------
+
+Your mpd.conf needs at least one httpd output section for streaming to work. In most cases, the encoder should be LAME (MP3). If you're running MPD on a low power device, such as a router, shine is a usable alternative, but audio quality will suffer noticeably for any given bitrate.
+
+    audio_output {
+    	type            "httpd"           #mandatory for streaming
+    	name            "HTTP MP3 stream" #name it anything you like
+    	encoder         "lame"            #or "shine" if lame uses too much cpu time
+    	bitrate         "160"             #160kbps seems like a good balance of quality and low mobile data usage
+    	port            "58000"           #port where MPD listens for streaming clients, this is what you'll put in stream_port in config.js
+    	bind_to_address	"0.0.0.0"         #listen on all network interfaces
+    	format          "44100:16:2"      #be sure to use a fixed stream format, like this one (44KHz, 16 bit, stereo)
+    	always_on       "no"              #not needed for Bragi, enable only if necessary for other clients
+    	max_clients     "4"               #0 for no limit
+    	tags            "yes"             #for more track info, especially in other clients
+    }
