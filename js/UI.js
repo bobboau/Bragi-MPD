@@ -106,6 +106,8 @@ var UI = (function(){
         updatePageTitle.offset = 0;
         seek.last_seek = 0;
         onStreamError.last_error = 0;
+        onStreamError.error_counter = 0;
+        onStreamError.timer = null;
     }
 
     /*******************\
@@ -122,6 +124,13 @@ var UI = (function(){
         else{
             return str+'';
         }
+    }
+
+    /**
+     * utility function, returns current time in seconds
+     */
+    function getTime(stream){
+        return new Date().getTime() / 1000;
     }
 
     /**
@@ -1946,13 +1955,6 @@ var UI = (function(){
     }
 
     /**
-     * utility function, returns current time in seconds
-     */
-    function getTime(stream){
-        return new Date().getTime() / 1000;
-    }
-
-    /**
      * play stream, changing the url if needed and handling promises to avoid spamming the console with errors
      */
     function playStream(stream){
@@ -1990,8 +1992,10 @@ var UI = (function(){
      * handle stream errors by retrying up to 10 times in 2 minutes, with increasing delay
      */
     function onStreamError(stream){
-        //stop stream completely to make sure that playStream() will do its thing and to give the network some idle time until we actually retry
-        stopStream(stream);
+        //don't do anything if error limit was reached or if we're already about to retry
+        if(onStreamError.error_counter >= 10 || onStreamError.timer){
+            return;
+        }
 
         //reset error counter when last error is more than 2 minutes ago
         var current_time = getTime();
@@ -1999,19 +2003,14 @@ var UI = (function(){
             onStreamError.error_counter = 0;
         }
 
-        //don't retry if error limit was reached or if we're already about to retry
-        if(onStreamError.error_counter >= 10 || onStreamError.timer){
-            console.log('Stream error, not retrying');
-            return;
-        }
-
         onStreamError.last_error = current_time;
         onStreamError.error_counter++;
-        console.log('Stream error ' + onStreamError.error_counter);
+
+        //stop stream completely to make sure that playStream() will do its thing and to give the network some idle time until we actually retry
+        stopStream(stream);
 
         //retry with delay
         onStreamError.timer = setTimeout(function(){
-            console.log('Stream retry ' + onStreamError.error_counter);
             playStream(stream);
             onStreamError.timer = null;
         }, 2000 * onStreamError.error_counter);
