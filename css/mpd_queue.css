@@ -10,45 +10,31 @@
 }
 
 .LIST_song_toolbar .LIST_song_play{
-    min-width: 1em;
-    margin: 0 0 0 1em;
-    background-image:  url(../img/media-play.svg);
+    background-image: url(../img/media-play.svg);
 }
 
 .LIST_song_toolbar .LIST_song_add{
-    min-width: 1em;
-    margin: 0 0 0 1em;
-    background-image:  url(../img/plus.svg);
+    background-image: url(../img/plus.svg);
 }
 
 .LIST_song_toolbar .LIST_song_remove{
-    min-width: 1em;
-    margin: 0 0 0 1em;
-    background-image:  url(../img/trash.svg);
+    background-image: url(../img/trash.svg);
 }
 
 .LIST_clear_queue.MPD_button{
-    background-image:  url(../img/trash.svg);
-    background-position: left center;
-    padding-left: 2em;
+    background-image: url(../img/trash.svg);
 }
 
 .LIST_save_queue.MPD_button{
-    background-image:  url(../img/save.svg);
-    background-position: left center;
-    padding-left: 2em;
+    background-image: url(../img/save.svg);
 }
 
 .LIST_remove_current.MPD_button{
-    background-image:  url(../img/x.svg);
-    background-position: left center;
-    padding-left: 2em;
+    background-image: url(../img/x.svg);
 }
 
 .LIST_song_toolbar .LIST_show_current{
-    background-position: left center;
-    padding-left: 2em;
-    background-image:  url(../img/eye.svg);
+    background-image: url(../img/eye.svg);
 }
 
 .LIST_song_title{
@@ -63,27 +49,18 @@
 
 .LIST_queue_find.MPD_button{
     background-image:  url(../img/magnifying-glass.svg);
-    background-position: left center;
-    padding-left: 2em;
 }
 
 .LIST_queue_find_quit.MPD_button{
     background-image:  url(../img/x.svg);
-    background-position: left center;
-    padding-left: 2em;
 }
 
 .LIST_queue_find_prev.MPD_button{
     background-image:  url(../img/chevron-left.svg);
-    background-position: left center;
-    padding-left: 2em;
 }
 
 .LIST_queue_find_next.MPD_button{
     background-image:  url(../img/chevron-right.svg);
-    background-position: left center;
-    padding-left: 2em;
-    margin-left: 1em;
 }
 
 .LIST_queue_find_value{

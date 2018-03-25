@@ -15,7 +15,6 @@
 .OUTPUT_output .MPD_button{
     white-space: nowrap;
     padding-left: 1.5em;
-    background-position: left center;
     display: inline-block;
     margin: 0 0 0 1em;
     cursor: pointer;

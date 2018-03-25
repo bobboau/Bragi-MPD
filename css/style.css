@@ -87,14 +87,17 @@ select {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    background: url(/img/chevron-bottom.svg) no-repeat right 5px center;
+    background: url(../img/chevron-bottom.svg) no-repeat right 5px center;
 }
 
 .MPD_button{
     cursor: pointer;
-    background-size:   contain;
+    margin-left: 0.5em;
+    background-size: contain;
     background-repeat: no-repeat;
-    background-position: center center;
+    background-position: left center;
+    -webkit-transition: background 0.5s;
+    transition: background 0.5s;
 }
 
 .MPD_button *{

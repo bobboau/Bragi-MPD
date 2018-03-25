@@ -20,30 +20,18 @@
 
 .LIST_append_playlist.MPD_button{
     background-image:  url(../img/plus.svg);
-    background-position: left center;
-    padding-left: 2.5em;
-    margin-left:1em;
 }
 
 .LIST_replace_playlist.MPD_button{
     background-image:  url(../img/list.svg);
-    background-position: left center;
-    padding-left: 2.5em;
-    margin-left:1em;
 }
 
 .LIST_delete_playlist.MPD_button{
     background-image:  url(../img/trash.svg);
-    background-position: left center;
-    padding-left: 20px;
-    margin-left:1em;
 }
 
 .LIST_rename_playlist.MPD_button{
     background-image:  url(../img/rename.svg);
-    background-position: left center;
-    padding-left: 20px;
-    margin-left:1em;
 }
 
 .MPD_playlist_list{
