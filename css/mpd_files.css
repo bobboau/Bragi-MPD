@@ -54,21 +54,18 @@ li.LIST_directory:not(.expanded) .MPD_directory_children .LIST_item{
     display: none;
 }
 
-.LIST_directory .LIST_song_add{
-    width: 0;
+.LIST_directory .LIST_song_add_playlist, .LIST_directory .LIST_song_add{
     display: inline-block;
     padding-left: 2.5em;
     font-size: .75em;
+}
+
+.LIST_directory .LIST_song_add{
     background-image:  url(../img/plus.svg);
 }
 
 .LIST_directory .LIST_song_add_playlist{
-    width: 1em;
-    display: inline-block;
     background-image: url(../img/list.svg);
-    margin-left: 8em;
-    padding-left: 2.5em;
-    font-size: 0.75em;
 }
 
 .MPD_directory_children .LIST_song{

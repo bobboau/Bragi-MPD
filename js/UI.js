@@ -91,16 +91,23 @@ var UI = (function(){
 
         setInterval(function(){
             updatePlaytime(getClient());
-        },150);
+        }, 250);
 
         if(!mobileCheck()){
             setInterval(function(){
                 updatePageTitle(getClient());
-            },250);
+            }, 250);
         }
 
         //setup event handlers for marque elements
         setupMarque();
+
+        //initialize 'static' variables here so we don't have to check if they're set all the time
+        updatePageTitle.offset = 0;
+        seek.last_seek = 0;
+        onStreamError.last_error = 0;
+        onStreamError.error_counter = 0;
+        onStreamError.timer = null;
     }
 
     /*******************\
@@ -117,6 +124,13 @@ var UI = (function(){
         else{
             return str+'';
         }
+    }
+
+    /**
+     * utility function, returns current time in seconds
+     */
+    function getTime(stream){
+        return new Date().getTime() / 1000;
     }
 
     /**
@@ -193,17 +207,21 @@ var UI = (function(){
         client.needs_auth = client_config.needs_auth;
 
         if(client_config.local_volume) {
-            client.local_volume = 1;
+            client.local_volume = true;
         }
         else{
-            client.local_volume = 0;
+            client.local_volume = false;
         }
 
         if(client_config.stream_port) {
             client.stream_port = client_config.stream_port;
+            //sometimes MPD.getHost() returns protocol and port, so we need to get rid of those
+            var hostname = client.getHost().toLowerCase().replace('http://', '').replace('https://', '').split(':')[0];
+            client.stream_url = 'http://' + hostname + ':' + client.stream_port + '/';
         }
         else{
             client.stream_port = 0;
+            client.stream_url = '';
         }
 
         if(client.needs_auth){
@@ -415,37 +433,27 @@ var UI = (function(){
         }
 
         var stream = $('audio.MPD_stream')[0];
-        if(client.stream_port){
-            var no_cache = '?no_cache=';
-            var current_url = stream.src.split(no_cache, 2)[0];
-            var new_url = 'http://' + client.getHost() + ':' + client.stream_port + '/';
-
-            //reload stream if changing instance (and thus url) or if there was an error that UI.streamError() gave up on
-            if((current_url != new_url) || stream.error){
-                stream.src = new_url + no_cache + Math.random() * 99999999;
-                stream.load();
-            }
-        }
-
         var playing = (client.getPlaystate() == 'play');
+
+        if(client.stream_port && playing){
+            //make sure the stream keeps playing. UI.onStreamError() gives up after a few errors, so try loading now that state has changed
+            //this will have no effect if stream is already playing
+            loadStream(stream);
+        }
+        else{
+            //no point in having the stream playing now
+            stopStream(stream);
+        }
 
         if(playing){
             //show pause
             $('.MPD_play').hide();
             $('.MPD_pause').show();
-
-            //make sure the stream keeps playing
-            stream.play();
         }
         else{
             //show play
             $('.MPD_play').show();
             $('.MPD_pause').hide();
-
-            //stop the stream and prevent buffering by setting empty source.
-            //not ideal as this causes a delay when playing again.
-            //nevertheless, better than pausing and having sound totally out of sync when playing again.
-            stream.src = '';
         }
 
         var volume;
@@ -456,7 +464,7 @@ var UI = (function(){
             }
             stream.volume = volume;
 
-            if(playing && stream.src && stream.paused){
+            if(playing && stream.src && stream.paused && mobileCheck()){
                 //show the user that we don't have permission to play the stream by putting the slider at the bottom
                 volume = 0;
             }
@@ -492,7 +500,7 @@ var UI = (function(){
             UI.onChange.state.shift()();
         }
 
-        if(document.hidden && updateState.last_state && updateState.last_state.current_song.id != state.current_song.id){
+        if(document.hidden && current_song && updateState.last_state && updateState.last_state.current_song.id != state.current_song.id){
             showNotification(
                 current_song.getDisplayName(),
                 'by: '+current_song.getArtist()
@@ -615,7 +623,7 @@ var UI = (function(){
             UI.last_clicked_file_element = root;
         }
         populateFileList(root);
-        //the root is treated differently than the rest of the oflders
+        //the root is treated differently than the rest of the folders
         //you can't close it and it shouldn't have the common tools
         //because 'add all music' is a sort of dangerous button on root
         root.addClass('expanded root');
@@ -655,7 +663,15 @@ var UI = (function(){
      */
     function onError(error, client){
         debugger;
-        alert('***ERROR*** '+error.message);
+        var msg = '***ERROR*** ' + error.message;
+        if(error.stack){
+            msg += '\n' + error.stack;
+        }
+        else if(error.lineNumber && error.fileName){
+            msg += '\non line ' + error.lineNumber + '\n';
+            msg += 'of file ' + error.fileName;
+        }
+        alert(msg);
     }
 
     /**
@@ -666,7 +682,7 @@ var UI = (function(){
         var password =  localStorage.getItem('password_'+client.name);
         // we\the user tried to do something we are not allowed to do
         if(UI.clients.length === 1){
-            var password = prompt('please enter a password');
+            var password = prompt('Please enter password for '+client.name);
             localStorage.setItem('password_'+client.name, password);
             client.authorize(password);
         }
@@ -687,7 +703,10 @@ var UI = (function(){
         var current_song = client.getCurrentSong();
         if(current_song){
             //there is a mix of div/span/td type html and input/select typeelements
-            $('input.MPD_seek').val(Math.round(client.getCurrentSongTime()));
+            if(getTime() - seek.last_seek > 2) {
+                //update the seekbar only if the user hasn't touched it in a bit
+                $('input.MPD_seek').val(Math.round(client.getCurrentSongTime()));
+            }
             var formatted_time = formatTime(client.getCurrentSongTime());
             $('.MPD_controller_current_song_time').html(formatted_time);
         }
@@ -706,9 +725,6 @@ var UI = (function(){
      * update our UI for ticking of play time
      */
     function updatePageTitle(client){
-        if(typeof updatePageTitle.offset === 'undefined'){
-            updatePageTitle.offset = 0;
-        }
         var current_song = client.getCurrentSong();
         if(current_song){
             var title = current_song.getDisplayName()+' - ';
@@ -834,7 +850,7 @@ var UI = (function(){
         function updateMarqueEffect(element){
             if(!element.updating){
                 if(!element.timer){
-                    element.timer =setTimeout(function(){
+                    element.timer = setTimeout(function(){
                         element.updating = true;
                         $(element).find('.copy').remove();
                         if($(element).width() < $(element).children().width()){
@@ -940,7 +956,7 @@ var UI = (function(){
         $('input.MPD_seek').prop('max', 100);
         $('input.MPD_seek').val(0);
 
-        $('audio.MPD_stream').prop('src', '');
+        stopStream($('audio.MPD_stream')[0]);
 
         //update the UI
         $('.INSTANCE_instance').removeClass('selected');
@@ -1100,9 +1116,7 @@ var UI = (function(){
         var stream = $('audio.MPD_stream')[0];
 
         //use volume slider to get permission to play on mobile
-        if(client.stream_port && stream.src){
-            stream.play();
-        }
+        playStream(stream);
 
         if(client.local_volume){
             stream.volume = volume;
@@ -1119,7 +1133,13 @@ var UI = (function(){
      * element -- the element that triggered the event (tells us which client to use)
      */
     function seek(element){
-        getClient().seek($(element).val());
+        var client = getClient();
+        var current_time = getTime();
+        if(client.getCurrentSong() && current_time - seek.last_seek >= 1){
+            //seek only once per second at most to avoid filling the MPD.js queue with seek commands
+            client.seek($(element).val());
+            seek.last_seek = current_time;
+        }
     }
 
 
@@ -1936,24 +1956,74 @@ var UI = (function(){
     }
 
     /**
-     * handle stream errors
+     * load stream, changing the url if needed. the stream will play once it actually starts receiving data.
      */
-    function streamError(stream){
-        var current_time = new Date().getTime();
-        if(typeof streamError.lastError == 'undefined'){
-            streamError.lastError = current_time;
-        }
-        //reset error counter when last error is more than 1 minute ago
-        if((typeof streamError.errorCounter == 'undefined') || (current_time - streamError.lastError > 60000)){
-            streamError.errorCounter = 0;
+    function loadStream(stream){
+        if(!stream.paused){
+            return;
         }
 
-        //reload the stream only if it has a source and it seems online
-        if(stream.src && (streamError.errorCounter < 10)){
-            streamError.errorCounter++;
-            stream.load();
-            stream.play();
+        var client = getClient();
+        var no_cache = '?no_cache=';
+        var current_url = stream.src.split(no_cache, 2)[0];
+
+        if(current_url != client.stream_url){
+            stream.src = client.stream_url + no_cache + Math.random() * 99999999;
         }
+
+        stream.load();
+    }
+
+    /**
+     * play stream, handling promises to avoid spamming the console with errors.
+     */
+    function playStream(stream){
+        if(!stream.src){
+            return;
+        }
+
+        var promise = stream.play();
+        if(promise !== undefined){
+            promise.then();
+        }
+    }
+
+    /**
+     * stop stream and prevent buffering by setting empty source
+     */
+    function stopStream(stream){
+        stream.pause();
+        if(stream.src){
+            stream.src = '';
+        }
+    }
+
+    /**
+     * handle stream errors by retrying up to 10 times in 2 minutes, with increasing delay
+     */
+    function onStreamError(stream){
+        //don't do anything if error limit was reached or if we're already about to retry
+        if(onStreamError.error_counter >= 10 || onStreamError.timer){
+            return;
+        }
+
+        //reset error counter if last error is more than 2 minutes ago
+        var current_time = getTime();
+        if(current_time - onStreamError.last_error > 120){
+            onStreamError.error_counter = 0;
+        }
+
+        onStreamError.last_error = current_time;
+        onStreamError.error_counter++;
+
+        //stop stream completely to make sure that loadStream() will do its thing and to give the network some idle time until we actually retry
+        stopStream(stream);
+
+        //retry with delay
+        onStreamError.timer = setTimeout(function(){
+            loadStream(stream);
+            onStreamError.timer = null;
+        }, 2000 * onStreamError.error_counter);
     }
 
     return {
@@ -2013,6 +2083,7 @@ var UI = (function(){
         queueFindPrev:queueFindPrev,
         queueFindNext:queueFindNext,
         queueFindchange:queueFindchange,
-        streamError:streamError
+        playStream:playStream,
+        onStreamError:onStreamError
     };
 })();

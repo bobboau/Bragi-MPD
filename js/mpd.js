@@ -968,6 +968,93 @@ function MPD(_port, _host, _password){
     |* private methods *|
     \*******************/
 
+    /****************************\
+    |* UTF-8 compatability code *|
+    \****************************/
+
+    /* because websockify apparently doesn't do this :\ */
+
+    /**
+     * convert a string to a UTF-8 byte sequence
+     * @private
+     */
+    function encodeString(str){
+      var bytes = [];
+      for(var i = 0; i < str.length; i++){
+        var char = str.codePointAt(i);
+        if(char > 65535){
+          bytes.push(240 | (char >> 18) & 7);   // 11110xxx
+          bytes.push(128 | (char >> 12) & 63);  // 10xxxxxx
+          bytes.push(128 | (char >>  6) & 63);  // 10xxxxxx
+          bytes.push(128 | (char & 63));        // 10xxxxxx
+        }
+        if(char > 2047){
+          bytes.push(224 | (char >> 12) & 15);  // 1110xxxx
+          bytes.push(128 | (char >>  6) & 63);  // 10xxxxxx
+          bytes.push(128 | (char & 63));        // 10xxxxxx
+        }
+        if(char > 127){
+          bytes.push(192 | (char >> 6) & 31);   // 110xxxxx
+          bytes.push(128 | (char & 63));        // 10xxxxxx
+        }
+        else{
+          bytes.push(char & 127);               // 0xxxxxxx
+        }
+      }
+      return bytes;
+    }
+
+
+    /**
+     * convert the byte sequence to a UTF-8 string
+     * @private
+     */
+    function decodeString(bytes){
+        //build a character code array
+        var chars = [];
+        for(var i = 0; i<bytes.length; i++){
+          var char = bytes[i];
+          if(char > 127){
+            if((char & 224) == 192){
+              //char 0b11100000 = 0b11000000 first 3 bits are 110
+              //first byte of a 2 byte sequence
+              char =
+                ((char & 31) << 6) | // 110xxxxx & 00011111
+                (bytes[i+1] & 63);  // 10xxxxxx & 00111111
+              i+=1;
+            }
+            else if((char & 240) == 224){
+              //char 0b11110000 = 0b11100000 first 4 bits are 1110
+              //first byte of a 3 byte sequence
+              char =
+                ((char & 15) << 12) |       // 1110xxxx & 00001111
+                ((bytes[i+1] & 63) << 6) | // 10xxxxxx & 00111111
+                (bytes[i+2] & 63);         // 10xxxxxx
+              i += 2
+            }
+            else if((char & 248) == 240){
+              //char 0b11111000 = 0b11110000 first 5 bits are 11110
+              //first byte of a 4 byte sequence
+              char =
+                ((char & 7) << 18) |          // 11110xxx & 00000111
+                ((bytes[i+1] & 63) << 12) |  // 10xxxxxx & 00111111
+                ((bytes[i+2] & 63) << 6) |   // 10xxxxxx & 00111111
+                (bytes[i+3] & 63);           // 10xxxxxx & 00111111
+              i += 3;
+            }
+            else{
+              throw new Error("#"+char+" invalid character encoding");
+            }
+          }
+          else{
+            char = char & 127;
+            //shouldn't actually make a difference
+          }
+          chars.push(char);
+        }
+        return String.fromCodePoint.apply(null,chars);
+    }
+
     /*************************\
     |* connection management *|
     \*************************/
@@ -978,7 +1065,7 @@ function MPD(_port, _host, _password){
      */
     function sendString(str){
         log('sending: "'+str+'"');
-        _private.socket.send_string(str);
+        _private.socket.send(encodeString(str));
     }
 
 
@@ -1305,7 +1392,8 @@ function MPD(_port, _host, _password){
      *fetch outstanding lines from MPD
      */
     function getRawLines(){
-        _private.raw_buffer += _private.socket.rQshiftStr();//get the raw string
+
+        _private.raw_buffer += decodeString(_private.socket.rQshiftBytes());//get the raw string
 
         var lines = _private.raw_buffer.split('\n');//split that into lines
 
@@ -2628,6 +2716,7 @@ MPD.Output = function(client, source){
  * Lists all songs and directories in path (blank string for root). also returns song file metadata info
  * @callback directoryContentsCallback
  * @param {directory[]} [directory_contents] - the contents of the directory, will be an array of objects representing director(y|ies) and/or song(s) interleived
+ */
 /**
  * is given search results when the search is complete
  * @callback searchResultsCallback

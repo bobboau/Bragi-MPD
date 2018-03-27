@@ -48,44 +48,26 @@ div.SEARCH_results_control{
 
 .SEARCH_remove.MPD_button{
     background-image:  url(../img/x.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin: auto 1em;
 }
 
 .SEARCH_add_criteria.MPD_button{
     background-image:  url(../img/plus.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .SEARCH_clear_criteria.MPD_button{
     background-image:  url(../img/trash.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .SEARCH_do_search.MPD_button{
     background-image:  url(../img/magnifying-glass.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .SEARCH_expand.MPD_button{
     background-image:  url(../img/expand-down.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .SEARCH_collapse.MPD_button{
     background-image:  url(../img/collapse-up.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .SEARCH_control input{
@@ -95,32 +77,25 @@ div.SEARCH_results_control{
 
 .SEARCH_append_to_queue.MPD_button{
     background-image:  url(../img/plus.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .SEARCH_append_to_playlist.MPD_button{
     background-image:  url(../img/list.svg);
-    background-position: left center;
-    padding-left: 1.5em;
-    margin-left: 1em;
 }
 
 .MPD_search .LIST_song_add{
-    width: 1em;
-    display: inline-block;
-    margin: 0 0 0 1em;
     background-image:  url(../img/plus.svg);
 }
 
 .MPD_search .LIST_song_add_playlist{
-    width: 1em;
-    display: inline-block;
-    margin: 0 0 0 1em;
     background-image:  url(../img/list.svg);
 }
 
 .hide_on_queue .on_queue{
     display: none;
+}
+
+.MPD_search form .MPD_button, .MPD_search .SEARCH_results_control .MPD_button{
+    padding-left: 1.5em;
+    margin-left: 0.75em;
 }

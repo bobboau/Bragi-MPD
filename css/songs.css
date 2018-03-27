@@ -93,3 +93,8 @@ span.LIST_song_minor_information{
     margin-top: 0;
     margin-bottom: auto;
 }
+
+.LIST_song .MPD_button{
+    min-width: 1em;
+    background-position: center center;
+}

@@ -63,8 +63,8 @@ template for a song on the queue
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse" onclick="UI.playQueueSong(this)"></span>
                         <span></span>
-                        <span class="LIST_song_play MPD_button colapse" onclick="UI.playQueueSong(this)">&nbsp;</span>
-                        <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeQueueSong(this)">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.playQueueSong(this)" title="Play">&nbsp;</span>
+                        <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeQueueSong(this)" title="Remove from queue">&nbsp;</span>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -85,9 +85,9 @@ template for a song on the queue
                 <div class="LIST_song_property LIST_song_path"></div>
             </span>
             <span class="vbox colapse LIST_move">
-                <div class="MPD_button LIST_song_move_up" onclick="UI.moveItemUp(this);"></div>
-                <div class="MPD_button LIST_song_swap" onclick="UI.moveItemStartReorder(this);"></div>
-                <div class="MPD_button LIST_song_move_down" onclick="UI.moveItemDown(this);"></div>
+                <div class="MPD_button LIST_song_move_up" onclick="UI.moveItemUp(this);" title="Move up"></div>
+                <div class="MPD_button LIST_song_swap" onclick="UI.moveItemStartReorder(this);" title="Swap"></div>
+                <div class="MPD_button LIST_song_move_down" onclick="UI.moveItemDown(this);" title="Move down"></div>
             </span>
         </li>
     </template>
@@ -107,9 +107,9 @@ template for a song on a playlist
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
                         <span></span>
-                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
-                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
-                        <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeSongFromPlaylist(this)">&nbsp;</span>
+                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)" title="Add to queue">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)" title="Play">&nbsp;</span>
+                        <span class="LIST_song_remove MPD_button colapse" onclick="UI.removeSongFromPlaylist(this)" title="Remove from playlist">&nbsp;</span>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -130,9 +130,9 @@ template for a song on a playlist
                 <div class="LIST_song_property LIST_song_path"></div>
             </span>
             <span class="vbox colapse LIST_move">
-                <div class="MPD_button LIST_song_move_up" onclick="UI.moveItemUp(this);"></div>
-                <div class="MPD_button LIST_song_swap" onclick="UI.moveItemStartReorder(this);"></div>
-                <div class="MPD_button LIST_song_move_down" onclick="UI.moveItemDown(this);"></div>
+                <div class="MPD_button LIST_song_move_up" onclick="UI.moveItemUp(this);" title="Move up"></div>
+                <div class="MPD_button LIST_song_swap" onclick="UI.moveItemStartReorder(this);" title="Swap"></div>
+                <div class="MPD_button LIST_song_move_down" onclick="UI.moveItemDown(this);" title="Move down"></div>
             </span>
         </li>
     </template>
@@ -147,9 +147,9 @@ template for a song file
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
                         <span></span>
-                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
-                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
-                        <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)">&nbsp;</span>
+                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)" title="Add to queue">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)" title="Play">&nbsp;</span>
+                        <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)" title="Add to playlist">&nbsp;</span>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -182,9 +182,9 @@ template for a song search
                     <span class="LIST_song_toolbar MPD_toolbar hbox">
                         <span class="LIST_song_property LIST_song_title colapse"></span>
                         <span></span>
-                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)">&nbsp;</span>
-                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)">&nbsp;</span>
-                        <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)">&nbsp;</span>
+                        <span class="LIST_song_add MPD_button colapse" onclick="UI.addSongToQueue(this)" title="Add to queue">&nbsp;</span>
+                        <span class="LIST_song_play MPD_button colapse" onclick="UI.addSongToQueueAndPlay(this)" title="Play">&nbsp;</span>
+                        <span class="LIST_song_add_playlist MPD_button colapse" onclick="UI.addSongToPlaylist(this)" title="Add to playlist">&nbsp;</span>
                     </span>
                 </div>
                 <div class="LIST_song_property LIST_song_artist"></div>
@@ -259,7 +259,7 @@ template for search criteria
         <div class="hbox colapse SEARCH_criteria_row">
             <select class="SEARCH_criteria_type" onchange="UI.updateSearchEditor(this);" ></select>
             <input class="SEARCH_criteria_value" onchange="UI.onSearchCriteriaValueChange(this);" ></input>
-            <div class="MPD_button SEARCH_remove colapse" onclick="UI.removeSearchCriteria(this);">Remove</div>
+            <div class="MPD_button SEARCH_remove colapse" onclick="UI.removeSearchCriteria(this);" title="Remove">&nbsp;</div>
         </div>
     </template>
 
@@ -312,10 +312,10 @@ template for an output
 < play/pause/seek/volume it's all right here
 -->
             <div class="MPD_controller hbox">
-                <audio class="MPD_stream" onended="UI.streamError(this);" onerror="UI.streamError(this);">
+                <audio class="MPD_stream" onerror="UI.onStreamError(this);" onloadeddata="UI.playStream(this);">
                 </audio>
-                <div class="MPD_play MPD_button" onclick="UI.play();"></div>
-                <div class="MPD_pause MPD_button" onclick="UI.pause();"></div>
+                <div class="MPD_play MPD_button" onclick="UI.play();" title="Play"></div>
+                <div class="MPD_pause MPD_button" onclick="UI.pause();" title="Pause"></div>
                 <div class="MPD_controller_middle_controls vbox">
                     <div class="MPD_controller_track_info hbox">
                         <div class="MPD_controller_current_song_title marque_overflow"></div>
@@ -333,9 +333,9 @@ template for an output
                         </div>
                     </div>
                     <div class="hbox">
-                        <div class="MPD_prev MPD_button" onclick="UI.previous();"></div>
-                        <input class="MPD_seek" type="range" min="0" oninput="UI.seek(this);" ></input>
-                        <div class="MPD_next MPD_button" onclick="UI.next();"></div>
+                        <div class="MPD_prev MPD_button" onclick="UI.previous();" title="Previous"></div>
+                        <input class="MPD_seek" type="range" min="0" oninput="UI.seek(this);"></input>
+                        <div class="MPD_next MPD_button" onclick="UI.next();" title="Next"></div>
                     </div>
                 </div>
                 <div class="MPD_controller_volume_container hbox">
@@ -343,7 +343,7 @@ template for an output
                         <img class="MPD_icon" src="img/volume-high.svg"/>
                         <img class="MPD_icon" src="img/volume-low.svg"/>
                     </div>
-                    <input class="MPD_volume" orient="vertical" type="range" min="0" max="1" step="0.0000001"  onchange="UI.setVolume(this);"></input>
+                    <input class="MPD_volume" orient="vertical" type="range" min="0" max="1" step="0.0000001" onchange="UI.setVolume(this);"></input>
                 </div>
             </div>
 
@@ -385,10 +385,10 @@ template for an output
                         <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
                     </ul>
                     <ul class="LIST_header LIST_queue_find_toolbar hbox" style="display:none;">
-                        <li class="LIST_queue_find_quit colapse MPD_button" onclick="UI.hideQueueFind(this);">&nbsp;</li>
-                        <li class="LIST_queue_find_prev colapse MPD_button" onclick="UI.queueFindPrev(this);">&nbsp;</li>
+                        <li class="LIST_queue_find_quit colapse MPD_button" onclick="UI.hideQueueFind(this);" title="Exit">&nbsp;</li>
+                        <li class="LIST_queue_find_prev colapse MPD_button" onclick="UI.queueFindPrev(this);" title="Find previous">&nbsp;</li>
                         <li><input class="LIST_queue_find_value" type="text"></input></li>
-                        <li class="LIST_queue_find_next colapse MPD_button" onclick="UI.queueFindNext(this);">&nbsp;</li>
+                        <li class="LIST_queue_find_next colapse MPD_button" onclick="UI.queueFindNext(this);" title="Find next">&nbsp;</li>
                     </ul>
                     <div class="LIST_empty">
                         The Queue is empty!

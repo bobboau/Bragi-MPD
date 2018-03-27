@@ -4,7 +4,8 @@ var CONFIG = {
             name:'main',
             port:8800
             /*,
-            hostname:'localhost'*/ //for example
+            hostname:'localhost',
+            stream_port: 58000*/ //for example
         }
     ]/*,
     theme:['alt_colors.css']*/
