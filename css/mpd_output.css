@@ -13,12 +13,10 @@
 }
 
 .OUTPUT_output .MPD_button{
-    white-space: nowrap;
-    padding-left: 1.5em;
+    font-size: 0.75em;
     display: inline-block;
-    margin: 0 0 0 1em;
-    cursor: pointer;
-    font-size: .75em;
+    padding-left: 1.5em;
+    margin-left: 0.75em;
 }
 
 .OUTPUT_output .OUTPUT_switch_to{

@@ -436,8 +436,9 @@ var UI = (function(){
         var playing = (client.getPlaystate() == 'play');
 
         if(client.stream_port && playing){
-            //make sure the stream keeps playing. UI.streamError() gives up after a few errors, so try playing now that state has changed
-            playStream(stream);
+            //make sure the stream keeps playing. UI.onStreamError() gives up after a few errors, so try loading now that state has changed
+            //this will have no effect if stream is already playing
+            loadStream(stream);
         }
         else{
             //no point in having the stream playing now
@@ -463,7 +464,7 @@ var UI = (function(){
             }
             stream.volume = volume;
 
-            if(playing && stream.src && stream.paused){
+            if(playing && stream.src && stream.paused && mobileCheck()){
                 //show the user that we don't have permission to play the stream by putting the slider at the bottom
                 volume = 0;
             }
@@ -622,7 +623,7 @@ var UI = (function(){
             UI.last_clicked_file_element = root;
         }
         populateFileList(root);
-        //the root is treated differently than the rest of the oflders
+        //the root is treated differently than the rest of the folders
         //you can't close it and it shouldn't have the common tools
         //because 'add all music' is a sort of dangerous button on root
         root.addClass('expanded root');
@@ -1955,9 +1956,9 @@ var UI = (function(){
     }
 
     /**
-     * play stream, changing the url if needed and handling promises to avoid spamming the console with errors
+     * load stream, changing the url if needed. the stream will play once it actually starts receiving data.
      */
-    function playStream(stream){
+    function loadStream(stream){
         if(!stream.paused){
             return;
         }
@@ -1971,6 +1972,15 @@ var UI = (function(){
         }
 
         stream.load();
+    }
+
+    /**
+     * play stream, handling promises to avoid spamming the console with errors.
+     */
+    function playStream(stream){
+        if(!stream.src){
+            return;
+        }
 
         var promise = stream.play();
         if(promise !== undefined){
@@ -1997,7 +2007,7 @@ var UI = (function(){
             return;
         }
 
-        //reset error counter when last error is more than 2 minutes ago
+        //reset error counter if last error is more than 2 minutes ago
         var current_time = getTime();
         if(current_time - onStreamError.last_error > 120){
             onStreamError.error_counter = 0;
@@ -2006,12 +2016,12 @@ var UI = (function(){
         onStreamError.last_error = current_time;
         onStreamError.error_counter++;
 
-        //stop stream completely to make sure that playStream() will do its thing and to give the network some idle time until we actually retry
+        //stop stream completely to make sure that loadStream() will do its thing and to give the network some idle time until we actually retry
         stopStream(stream);
 
         //retry with delay
         onStreamError.timer = setTimeout(function(){
-            playStream(stream);
+            loadStream(stream);
             onStreamError.timer = null;
         }, 2000 * onStreamError.error_counter);
     }
@@ -2073,6 +2083,7 @@ var UI = (function(){
         queueFindPrev:queueFindPrev,
         queueFindNext:queueFindNext,
         queueFindchange:queueFindchange,
+        playStream:playStream,
         onStreamError:onStreamError
     };
 })();

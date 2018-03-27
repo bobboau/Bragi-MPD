@@ -312,7 +312,7 @@ template for an output
 < play/pause/seek/volume it's all right here
 -->
             <div class="MPD_controller hbox">
-                <audio class="MPD_stream" onerror="UI.onStreamError(this);">
+                <audio class="MPD_stream" onerror="UI.onStreamError(this);" onloadeddata="UI.playStream(this);">
                 </audio>
                 <div class="MPD_play MPD_button" onclick="UI.play();" title="Play"></div>
                 <div class="MPD_pause MPD_button" onclick="UI.pause();" title="Pause"></div>
