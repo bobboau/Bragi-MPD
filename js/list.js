@@ -45,7 +45,7 @@
         contents.update_timer = null;
 
         //now add a bunch of methods to it
-        contents.setItems = function(items){
+        contents.setItems = function(items, done){
             //if we are in the middle of updating something else stop that
             if(contents.update_timer){
                 clearTimeout(contents.update_timer);
@@ -77,6 +77,10 @@
                             //if we have gone off the end of the list stop doing stuff
                             clearTimeout(contents.update_timer);
                             contents.update_timer = null;
+                            //let caller know we're done
+                            if(typeof done === 'function'){
+                                done();
+                            }
                             return;
                         }
                     }

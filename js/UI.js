@@ -425,6 +425,25 @@ var UI = (function(){
     }
 
     /**
+     * is current instance playing?
+     */
+    function isPlaying(){
+        return getClient().getPlaystate() === 'play';
+    }
+
+
+    /**
+     * update current song in Queue tab
+     */
+    function updateQueueCurrentSong(){
+        $('.MPD_queue [data-mpd_queue_song_id]').removeClass('selected');
+        var current_song_id = getClient().getCurrentSongID();
+        if(current_song_id){
+            $('.MPD_queue [data-mpd_queue_song_id="'+current_song_id+'"]').addClass('selected');
+        }
+    }
+
+    /**
      * update our UI on a state change
      */
     function updateState(state, client){
@@ -433,7 +452,7 @@ var UI = (function(){
         }
 
         var stream = $('audio.MPD_stream')[0];
-        var playing = (client.getPlaystate() == 'play');
+        var playing = isPlaying();
 
         if(client.stream_port && playing){
             //make sure the stream keeps playing. UI.onStreamError() gives up after a few errors, so try loading now that state has changed
@@ -480,8 +499,7 @@ var UI = (function(){
             $('.MPD_controller_current_song_artist').html(stringClean(current_song.getArtist()));
             $('.MPD_controller_current_song_album').html(stringClean(current_song.getAlbum()));
 
-            $('.MPD_queue [data-mpd_queue_song_id]').removeClass('selected');
-            $('.MPD_queue [data-mpd_queue_song_id="'+client.getCurrentSongID()+'"]').addClass('selected');
+            updateQueueCurrentSong();
 
             //there is a mix of div/span/td type html and input/select typeelements
             $('.MPD_controller_current_song_duration').html(formatTime(current_song.getDuration()));
@@ -551,9 +569,8 @@ var UI = (function(){
             return;
         }
         $('.MPD_queue').each(function(i,queue_element){
-            queue_element.setItems(queue.getSongs());
+            queue_element.setItems(queue.getSongs(), updateQueueCurrentSong);
         });
-        $('.MPD_queue [data-mpd_queue_song_id="'+client.getCurrentSongID()+'"]').addClass('selected');
 
         if(queue.getSongs().length < 1){
             //if there are no songs, nothing is playing
@@ -561,7 +578,6 @@ var UI = (function(){
             $('.MPD_play').show();
             $('.MPD_pause').hide();
         }
-
 
         while(UI.onChange.queue.length > 0){
             UI.onChange.queue.shift()();
@@ -1135,8 +1151,8 @@ var UI = (function(){
     function seek(element){
         var client = getClient();
         var current_time = getTime();
-        if(client.getCurrentSong() && current_time - seek.last_seek >= 1){
-            //seek only once per second at most to avoid filling the MPD.js queue with seek commands
+        if(client.getCurrentSong() && current_time - seek.last_seek >= 0.5){
+            //seek only twice per second at most to avoid filling the MPD.js queue with seek commands
             client.seek($(element).val());
             seek.last_seek = current_time;
         }
@@ -2002,12 +2018,12 @@ var UI = (function(){
      * handle stream errors by retrying up to 10 times in 2 minutes, with increasing delay
      */
     function onStreamError(stream){
-        //don't do anything if error limit was reached or if we're already about to retry
-        if(onStreamError.error_counter >= 10 || onStreamError.timer){
+        //don't do anything if MPD isn't playing, if the error limit was reached, or if we're already about to retry
+        if(!isPlaying() || onStreamError.error_counter >= 10 || onStreamError.timer){
             return;
         }
 
-        //reset error counter if last error is more than 2 minutes ago
+        //reset error counter if last error was over 2 minutes ago
         var current_time = getTime();
         if(current_time - onStreamError.last_error > 120){
             onStreamError.error_counter = 0;
