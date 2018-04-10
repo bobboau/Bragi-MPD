@@ -1476,6 +1476,18 @@ var UI = (function(){
         }
     }
 
+    /**
+     * ask MPD to update its database and reset local file list
+     */
+    function updateDB(element){
+        if(!confirm('Are you sure you want to update the database? This may take a few minutes.')){
+            return;
+        }
+        var client = getClient();
+        client.updateDatabase();
+        updateFiles(null,client);
+    }
+
     /* search stuff */
 
     /**
@@ -1604,7 +1616,7 @@ var UI = (function(){
      */
     function resetSearch(element, suppress_warning){
         if(!suppress_warning){
-            if(!confirm('are you sure you want to reset the search form?')){
+            if(!confirm('Are you sure you want to reset the search form?')){
                 return;
             }
         }
@@ -2074,6 +2086,7 @@ var UI = (function(){
         addDirectoryToQueue:addDirectoryToQueue,
         addDirectoryToPlaylist:addDirectoryToPlaylist,
         settingChange:settingChange,
+        updateDB:updateDB,
         addSearchCriteria:addSearchCriteria,
         updateSearchEditor:updateSearchEditor,
         removeSearchCriteria:removeSearchCriteria,
