@@ -979,29 +979,16 @@ function MPD(_port, _host, _password){
      * @private
      */
     function encodeString(str){
-      var bytes = [];
-      for(var i = 0; i < str.length; i++){
-        var char = str.codePointAt(i);
-        if(char > 65535){
-          bytes.push(240 | (char >> 18) & 7);   // 11110xxx
-          bytes.push(128 | (char >> 12) & 63);  // 10xxxxxx
-          bytes.push(128 | (char >>  6) & 63);  // 10xxxxxx
-          bytes.push(128 | (char & 63));        // 10xxxxxx
+        for(var i=0, enc = encodeURIComponent(str), bytes = []; i < enc.length;) {
+            if(enc[i] === '%') {
+                bytes.push(parseInt(enc.substr(i+1, 2), 16));
+                i += 3;
+            }
+            else {
+                bytes.push(enc.charCodeAt(i++));
+            }
         }
-        if(char > 2047){
-          bytes.push(224 | (char >> 12) & 15);  // 1110xxxx
-          bytes.push(128 | (char >>  6) & 63);  // 10xxxxxx
-          bytes.push(128 | (char & 63));        // 10xxxxxx
-        }
-        if(char > 127){
-          bytes.push(192 | (char >> 6) & 31);   // 110xxxxx
-          bytes.push(128 | (char & 63));        // 10xxxxxx
-        }
-        else{
-          bytes.push(char & 127);               // 0xxxxxxx
-        }
-      }
-      return bytes;
+        return bytes;
     }
 
 
@@ -1010,49 +997,12 @@ function MPD(_port, _host, _password){
      * @private
      */
     function decodeString(bytes){
-        //build a character code array
-        var chars = [];
-        for(var i = 0; i<bytes.length; i++){
-          var char = bytes[i];
-          if(char > 127){
-            if((char & 224) == 192){
-              //char 0b11100000 = 0b11000000 first 3 bits are 110
-              //first byte of a 2 byte sequence
-              char =
-                ((char & 31) << 6) | // 110xxxxx & 00011111
-                (bytes[i+1] & 63);  // 10xxxxxx & 00111111
-              i+=1;
-            }
-            else if((char & 240) == 224){
-              //char 0b11110000 = 0b11100000 first 4 bits are 1110
-              //first byte of a 3 byte sequence
-              char =
-                ((char & 15) << 12) |       // 1110xxxx & 00001111
-                ((bytes[i+1] & 63) << 6) | // 10xxxxxx & 00111111
-                (bytes[i+2] & 63);         // 10xxxxxx
-              i += 2
-            }
-            else if((char & 248) == 240){
-              //char 0b11111000 = 0b11110000 first 5 bits are 11110
-              //first byte of a 4 byte sequence
-              char =
-                ((char & 7) << 18) |          // 11110xxx & 00000111
-                ((bytes[i+1] & 63) << 12) |  // 10xxxxxx & 00111111
-                ((bytes[i+2] & 63) << 6) |   // 10xxxxxx & 00111111
-                (bytes[i+3] & 63);           // 10xxxxxx & 00111111
-              i += 3;
-            }
-            else{
-              throw new Error("#"+char+" invalid character encoding");
-            }
-          }
-          else{
-            char = char & 127;
-            //shouldn't actually make a difference
-          }
-          chars.push(char);
+        for(var i=0, s=''; i<bytes.length; i++) {
+            var hex = bytes[i].toString(16);
+            if(hex.length < 2) hex = '0' + hex;
+            s += '%' + hex;
         }
-        return String.fromCodePoint.apply(null,chars);
+        return decodeURIComponent(s);
     }
 
     /*************************\

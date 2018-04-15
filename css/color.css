@@ -60,6 +60,10 @@ input{
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+.MPD_button.pushed{
+    background-color: rgba(192, 192, 255, 0.4);
+}
+
 /*********\
 |* SONGS *|
 \*********/
