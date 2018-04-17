@@ -725,6 +725,19 @@ var UI = (function(){
     }
 
     /**
+     * how many connected instances are there?
+     */
+    function countConnectedClients(){
+        var count = 0;
+        UI.clients.forEach(function(client){
+            if (client.isConnected()){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
      * called when some sort of permissions issue arizes
      */
     function onAuthFailure(error, client){
@@ -743,6 +756,11 @@ var UI = (function(){
             instance_element.find('.INSTANCE_password').closest('tr').css({display:''});
             instance_element.find('.INSTANCE_password_message').html('(rejected)');
             client.last_failed_password = password;
+
+            //if there are multiple instances and none are connected, switch to instances tab
+            if(countConnectedClients() == 0){
+                $('.UI_main .TAB_control .TAB_button[data-tab_page=instance]').click();
+            }
         }
     }
 
