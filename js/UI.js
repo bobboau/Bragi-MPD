@@ -733,7 +733,7 @@ var UI = (function(){
             if (client.isConnected()){
                 count++;
             }
-        }
+        });
         return count;
     }
 
