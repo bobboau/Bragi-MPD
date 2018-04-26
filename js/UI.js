@@ -105,6 +105,7 @@ var UI = (function(){
         //initialize 'static' variables here so we don't have to check if they're set all the time
         updatePageTitle.offset = 0;
         seek.last_seek = 0;
+        setPushedButton.timer = null;
         onStreamError.last_error = 0;
         onStreamError.error_counter = 0;
         onStreamError.timer = null;
@@ -422,7 +423,7 @@ var UI = (function(){
             connection_element.addClass('bad');
             $('.MPD_instances').append(contents);
         });
-        $('body').attr('data-active_client',0);
+        $('body').attr('data-active_client', 0);
     }
 
     /**
@@ -432,6 +433,52 @@ var UI = (function(){
         return getClient().getPlaystate() === 'play';
     }
 
+    /**
+     * how many connected instances are there?
+     */
+    function countConnectedClients(){
+        var count = 0;
+        UI.clients.forEach(function(client){
+            if (client.isConnected()){
+                count++;
+            }
+        });
+        return count;
+    }
+
+    /**
+     * activate a tab
+     */
+    function switchToTab(name){
+        if(!name){
+            return;
+        }
+        $('.UI_main .TAB_control .TAB_button[data-tab_page=' + name + ']').click();
+    }
+
+    /**
+     * update volume slider
+     */
+    function updateVolume(stream){
+        var client = getClient();
+        var volume;
+        if(client.local_volume){
+            volume = localStorage.getItem('setting_local_volume');
+            if(volume === null){
+                volume = 0.5;
+            }
+            stream.volume = volume;
+
+            if(client.stream_port && isPlaying() && stream.src && stream.paused){
+                //show the user that we don't have permission to play the stream by putting the slider at the bottom
+                volume = 0;
+            }
+        }
+        else{
+            volume = client.getVolume();
+        }
+        $('input.MPD_volume').val(volume);
+    }
 
     /**
      * update current song in Queue tab
@@ -445,26 +492,25 @@ var UI = (function(){
     }
 
     /**
-     * set pushed button, apply 'pushed' css class, to be removed on a state change
+     * set pushed button: applies 'pushed' css class, to be removed with delay on a state change
      */
     function setPushedButton(element){
-        //already nothing, exit
-        if(element === setPushedButton.lastPushedButton){
-            return;
-        }
+        //remove 'pushed' class from previously used buttons
+        var clear_pushed = function(){
+            setPushedButton.timer = null;
+            $('.pushed').removeClass('pushed');
+        };
 
-        var select_element = $(element);
-
-        //remove 'pushed' class from last button first
-        if(setPushedButton.lastPushedButton){
-            $(setPushedButton.lastPushedButton).removeClass('pushed');
-            setPushedButton.lastPushedButton = undefined;
-        }
-
-        //add 'pushed' class to button
         if(element){
+            //clear 'pushed' class now to apply it to another button
+			clearTimeout(setPushedButton.timer);
+            clear_pushed();
+            //add 'pushed' class to button
             $(element).addClass('pushed');
-            setPushedButton.lastPushedButton = element;
+        }
+        else if(!setPushedButton.timer){
+            //clear 'pushed' class with delay
+            setPushedButton.timer = setTimeout(clear_pushed, 333);
         }
     }
 
@@ -477,19 +523,13 @@ var UI = (function(){
         }
 
         var stream = $('audio.MPD_stream')[0];
-        var playing = isPlaying();
 
-        if(client.stream_port && playing){
-            //make sure the stream keeps playing. UI.onStreamError() gives up after a few errors, so try loading now that state has changed
-            //this will have no effect if stream is already playing
-            loadStream(stream);
-        }
-        else{
-            //no point in having the stream playing now
-            stopStream(stream);
-        }
+        //make sure the stream stays on the right url and keeps playing.
+        //UI.onStreamError() gives up after a few errors, so try preparing now that state has changed.
+        //this will have no effect if stream is already playing.
+        prepareStream(stream);
 
-        if(playing){
+        if(isPlaying()){
             //show pause
             $('.MPD_play').hide();
             $('.MPD_pause').show();
@@ -500,23 +540,7 @@ var UI = (function(){
             $('.MPD_pause').hide();
         }
 
-        var volume;
-        if(client.local_volume){
-            volume = localStorage.getItem('setting_local_volume');
-            if(volume === null){
-                volume = 0.5;
-            }
-            stream.volume = volume;
-
-            if(playing && stream.src && stream.paused && mobileCheck()){
-                //show the user that we don't have permission to play the stream by putting the slider at the bottom
-                volume = 0;
-            }
-        }
-        else{
-            volume = client.getVolume();
-        }
-        $('input.MPD_volume').val(volume);
+        updateVolume(stream);
 
         var current_song = client.getCurrentSong();
         if(current_song){
@@ -725,19 +749,6 @@ var UI = (function(){
     }
 
     /**
-     * how many connected instances are there?
-     */
-    function countConnectedClients(){
-        var count = 0;
-        UI.clients.forEach(function(client){
-            if (client.isConnected()){
-                count++;
-            }
-        });
-        return count;
-    }
-
-    /**
      * called when some sort of permissions issue arizes
      */
     function onAuthFailure(error, client){
@@ -759,7 +770,7 @@ var UI = (function(){
 
             //if there are multiple instances and none are connected, switch to instances tab
             if(countConnectedClients() == 0){
-                $('.UI_main .TAB_control .TAB_button[data-tab_page=instance]').click();
+                switchToTab('instance');
             }
         }
     }
@@ -1226,7 +1237,7 @@ var UI = (function(){
         setPushedButton(element);
         var playlist = getPlaylist(element);
         playlist.appendToQueue();
-        $('.UI_main .TAB_control .TAB_button[data-tab_page=queue]').click();
+        switchToTab('queue');
     }
 
 
@@ -1237,7 +1248,7 @@ var UI = (function(){
         setPushedButton(element);
         var playlist = getPlaylist(element);
         playlist.loadIntoQueue();
-        $('.UI_main .TAB_control .TAB_button[data-tab_page=queue]').click();
+        switchToTab('queue');
     }
 
 
@@ -1320,6 +1331,10 @@ var UI = (function(){
         if(children.length > 0 && children.children().length == 0){
             //element hasn't been populated yet
             populateFileList(parent);
+        }
+        else{
+            //already populated, just show the songs
+            children.children('.LIST_song').removeClass('collapsed');
         }
 
         //expanded == showing child nodes
@@ -2077,14 +2092,15 @@ var UI = (function(){
     }
 
     /**
-     * load stream, changing the url if needed. the stream will play once it actually starts receiving data.
+     * set the stream's url and load it. the stream should later play on its own via onloadeddata.
      */
-    function loadStream(stream){
+    function prepareStream(stream){
+        var client = getClient();
+
         if(!stream.paused){
             return;
         }
 
-        var client = getClient();
         var no_cache = '?no_cache=';
         var current_url = stream.src.split(no_cache, 2)[0];
 
@@ -2137,12 +2153,12 @@ var UI = (function(){
         onStreamError.last_error = current_time;
         onStreamError.error_counter++;
 
-        //stop stream completely to make sure that loadStream() will do its thing and to give the network some idle time until we actually retry
+        //stop stream completely to make sure that prepareStream() will do its thing and to give the network some idle time until we actually retry
         stopStream(stream);
 
         //retry with delay
         onStreamError.timer = setTimeout(function(){
-            loadStream(stream);
+            prepareStream(stream);
             onStreamError.timer = null;
         }, 2000 * onStreamError.error_counter);
     }
@@ -2180,6 +2196,7 @@ var UI = (function(){
         addDirectoryToPlaylist:addDirectoryToPlaylist,
         settingChange:settingChange,
         updateDB:updateDB,
+        updateVolume:updateVolume,
         addSearchCriteria:addSearchCriteria,
         updateSearchEditor:updateSearchEditor,
         removeSearchCriteria:removeSearchCriteria,
