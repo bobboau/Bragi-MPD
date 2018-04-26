@@ -333,9 +333,9 @@ template for an output
                         </div>
                     </div>
                     <div class="hbox">
-                        <div class="MPD_prev MPD_button" onclick="UI.previous();" title="Previous"></div>
+                        <div class="MPD_prev MPD_button" onclick="UI.previous(this);" title="Previous"></div>
                         <input class="MPD_seek" type="range" min="0" oninput="UI.seek(this);"></input>
-                        <div class="MPD_next MPD_button" onclick="UI.next();" title="Next"></div>
+                        <div class="MPD_next MPD_button" onclick="UI.next(this);" title="Next"></div>
                     </div>
                 </div>
                 <div class="MPD_controller_volume_container hbox">
