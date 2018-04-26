@@ -1311,8 +1311,8 @@ var UI = (function(){
      * emptys all songs from the play queue
      */
     function clearQueue(element){
-        setPushedButton(element);
         getClient().clearQueue();
+        setPushedButton(element);
     }
 
 
