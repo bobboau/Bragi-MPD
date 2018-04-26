@@ -109,7 +109,6 @@ var UI = (function(){
         onStreamError.last_error = 0;
         onStreamError.error_counter = 0;
         onStreamError.timer = null;
-        setPushedButton.lastPushedButton = undefined;
     }
 
     /*******************\
