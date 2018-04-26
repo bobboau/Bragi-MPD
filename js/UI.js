@@ -105,6 +105,7 @@ var UI = (function(){
         //initialize 'static' variables here so we don't have to check if they're set all the time
         updatePageTitle.offset = 0;
         seek.last_seek = 0;
+        updateState.timer = null;
         setPushedButton.timer = null;
         onStreamError.last_error = 0;
         onStreamError.error_counter = 0;
@@ -130,8 +131,15 @@ var UI = (function(){
     /**
      * utility function, returns current time in seconds
      */
-    function getTime(stream){
+    function getTime(){
         return new Date().getTime() / 1000;
+    }
+
+    /**
+     * returns the stream audio element
+     */
+    function getStream(){
+        return $('audio.MPD_stream')[0];
     }
 
     /**
@@ -521,14 +529,27 @@ var UI = (function(){
             return;
         }
 
-        var stream = $('audio.MPD_stream')[0];
+        var playing = isPlaying();
+        var stream = getStream();
 
-        //make sure the stream stays on the right url and keeps playing.
-        //UI.onStreamError() gives up after a few errors, so try preparing now that state has changed.
-        //this will have no effect if stream is already playing.
-        prepareStream(stream);
+        if(playing){
+            //make sure the stream stays on the right url and keeps playing.
+            //UI.onStreamError() gives up after a few errors, so try preparing now that state has changed.
+            //this will have no effect if stream is already playing.
+            prepareStream(stream);
 
-        if(isPlaying()){
+            clearTimeout(updateState.timer);
+            updateState.timer = null;
+        }
+        else if(!stream.paused && !updateState.timer){
+            //stop the stream after 20 seconds
+            updateState.timer = setTimeout(function(){
+                stopStream(stream);
+                updateState.timer = null;
+            }, 20000);
+        }
+
+        if(playing){
             //show pause
             $('.MPD_play').hide();
             $('.MPD_pause').show();
@@ -1034,7 +1055,7 @@ var UI = (function(){
         $('input.MPD_seek').prop('max', 100);
         $('input.MPD_seek').val(0);
 
-        stopStream($('audio.MPD_stream')[0]);
+        stopStream(getStream());
 
         //update the UI
         $('.INSTANCE_instance').removeClass('selected');
@@ -1156,8 +1177,14 @@ var UI = (function(){
      * element -- the element that triggered the event (tells us which client to use)
      */
     function pause(element){
-        setPushedButton(element);
         getClient().pause();
+
+        var stream = getStream();
+        if(!stream.paused){
+            stopStream(stream);
+        }
+
+        setPushedButton(element);
     }
 
 
@@ -1197,7 +1224,7 @@ var UI = (function(){
     function setVolume(element){
         var client = getClient();
         var volume = $(element).val();
-        var stream = $('audio.MPD_stream')[0];
+        var stream = getStream();
 
         //use volume slider to get permission to play on mobile
         playStream(stream);
