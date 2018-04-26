@@ -1308,15 +1308,6 @@ var UI = (function(){
     }
 
     /**
-     * emptys all songs from the play queue
-     */
-    function clearQueue(element){
-        getClient().clearQueue();
-        setPushedButton(element);
-    }
-
-
-    /**
      * toggle showing children, if no chilrent populate from the client
      */
     function fileListClick(element){
@@ -1455,6 +1446,7 @@ var UI = (function(){
     function clearQueue(element){
         if(confirm("Are you sure you want to empty the play Queue?")){
             getClient().clearQueue();
+            setPushedButton(element);
         }
     }
 
@@ -2177,7 +2169,6 @@ var UI = (function(){
         selectPlaylist:selectPlaylist,
         removeCurrentQueueSong:removeCurrentQueueSong,
         showCurrenSong:showCurrenSong,
-        clearQueue:clearQueue,
         fileListClick:function(element){
             fileListClick.apply(this,arguments);
             this.pushState($(element).find('.LIST_directory_path').html());
