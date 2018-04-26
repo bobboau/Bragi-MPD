@@ -510,7 +510,7 @@ var UI = (function(){
 
         if(element){
             //clear 'pushed' class now to apply it to another button
-			clearTimeout(setPushedButton.timer);
+            clearTimeout(setPushedButton.timer);
             clear_pushed();
             //add 'pushed' class to button
             $(element).addClass('pushed');
@@ -1321,6 +1321,7 @@ var UI = (function(){
      * removes the currently playing song from the queue
      */
     function removeCurrentQueueSong(element){
+        setPushedButton(element);
         var client = getClient();
         client.removeSongsFromQueueById(client.getCurrentSongID());
     }
@@ -1329,9 +1330,11 @@ var UI = (function(){
      * scrolls the queue to the currently playing song
      */
     function showCurrenSong(element){
+        setPushedButton(element);
         var mpd_client = getClient();
         var song_id = mpd_client.getCurrentSongID();
         scrollToSong(song_id, 0.5);
+        setPushedButton();
     }
 
     /**
