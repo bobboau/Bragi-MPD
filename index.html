@@ -312,7 +312,7 @@ template for an output
 < play/pause/seek/volume it's all right here
 -->
             <div class="MPD_controller hbox">
-                <audio class="MPD_stream" onerror="UI.onStreamError(this);" onloadeddata="UI.playStream(this);">
+                <audio class="MPD_stream" onerror="UI.onStreamError(this);" onloadeddata="UI.playStream(this);" onplay="UI.updateVolume(this);"><!--let the user know we have permission to play by setting the volume slider properly once the stream actually plays -->
                 </audio>
                 <div class="MPD_play MPD_button" onclick="UI.play();" title="Play"></div>
                 <div class="MPD_pause MPD_button" onclick="UI.pause();" title="Pause"></div>
@@ -384,7 +384,7 @@ template for an output
                         <li class="LIST_save_queue MPD_button" onclick="UI.saveQueueAsPlaylist(this);">Save Queue</li>
                         <li class="LIST_clear_queue MPD_button" onclick="UI.clearQueue(this);">Clear Queue</li>
                     </ul>
-                    <ul class="LIST_header LIST_queue_find_toolbar hbox" style="display:none;">
+                    <ul class="LIST_header LIST_queue_find_toolbar hbox MPD_toolbar" style="display:none;">
                         <li class="LIST_queue_find_quit colapse MPD_button" onclick="UI.hideQueueFind(this);" title="Exit">&nbsp;</li>
                         <li class="LIST_queue_find_prev colapse MPD_button" onclick="UI.queueFindPrev(this);" title="Find previous">&nbsp;</li>
                         <li><input class="LIST_queue_find_value" type="text"></input></li>
@@ -481,7 +481,7 @@ template for an output
                         <th>Notifications:</th><td><input type="checkbox" data-setting="notifications" onchange="UI.settingChange(this);"></input></td>
                     </tr>
                     <tr>
-                        <th>Update database:</th><td><input type="button" data-setting="update-db" onclick="UI.updateDB(this);" value="Start"></input></td>
+                        <th>Update database:</th><td><input type="button" class="MPD_setting_update_db MPD_button" onclick="UI.updateDB(this);" value="Start"></input></td>
                     </tr>
                 </table>
             </div>

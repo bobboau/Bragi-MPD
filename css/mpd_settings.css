@@ -19,3 +19,11 @@
 .MPD_setting th{
     text-align: right;
 }
+
+.MPD_setting .MPD_button{
+    padding-left: 1.5em;
+}
+
+.MPD_setting_update_db.MPD_button{
+    background-image: url(../img/save.svg);
+}
