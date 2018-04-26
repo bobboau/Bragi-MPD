@@ -314,8 +314,8 @@ template for an output
             <div class="MPD_controller hbox">
                 <audio class="MPD_stream" onerror="UI.onStreamError(this);" onloadeddata="UI.playStream(this);" onplay="UI.updateVolume(this);"><!--let the user know we have permission to play by setting the volume slider properly once the stream actually plays -->
                 </audio>
-                <div class="MPD_play MPD_button" onclick="UI.play();" title="Play"></div>
-                <div class="MPD_pause MPD_button" onclick="UI.pause();" title="Pause"></div>
+                <div class="MPD_play MPD_button" onclick="UI.play(this);" title="Play"></div>
+                <div class="MPD_pause MPD_button" onclick="UI.pause(this);" title="Pause"></div>
                 <div class="MPD_controller_middle_controls vbox">
                     <div class="MPD_controller_track_info hbox">
                         <div class="MPD_controller_current_song_title marque_overflow"></div>
