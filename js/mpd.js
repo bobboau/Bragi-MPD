@@ -860,7 +860,14 @@ function MPD(_port, _host, _password){
       * set to something falsyto disable automatic reconnection
       * @private
       */
-     reconnect_time: 3000,
+     reconnect_time: 2000,
+
+     /**
+      * number -- int how many automatic reconnection attempts to make
+      * before clearing state and calling the disconnect handler
+      * @private
+      */
+     reconnect_silent_tries: 2,
 
      /**
       * true if we want logging turned on
@@ -873,6 +880,7 @@ function MPD(_port, _host, _password){
       * @typedef {Object} state
       * @property {String} version - server protocol version
       * @property {Boolean} connected - if we are currently connected to the server or not
+      * @property {Integer} reconnect_tries - how many automatic connection attemps made after disconnection; reset to 0 on confirmed successful connection
       * @property {String} playstate - enum, PLAYING, STOPPED, PAUSED
       * actual MPD attribute: state (int 0,1,2)
       * @property {Integer} volume - 0 to 1 the current volume
@@ -902,6 +910,7 @@ function MPD(_port, _host, _password){
      state:{
          version: null,
          connected:false,
+         reconnect_tries:0,
          playstate: null,
          volume: null,
          repeat: null,
@@ -1033,6 +1042,7 @@ function MPD(_port, _host, _password){
       websocket.on('open',onConnect);
 
       websocket.on('message', function(){
+          _private.state.reconnect_tries = 0;
           _private.responceProcessor.apply(this,arguments);
       });
 
@@ -1063,17 +1073,21 @@ function MPD(_port, _host, _password){
     function onDisconnect(){
         log("disconnected");
 
-        callHandler('Disconnect', arguments);
+        //don't disturb anything until we've tried reconnecting at least _private.reconnect_silent_tries times
+        if(_private.state.reconnect_tries >= _private.reconnect_silent_tries || !_private.reconnect_time){
+            callHandler('Disconnect', arguments);
 
-        _private.state.connected = false;
-        _private.socket = null;
-        _private.state.version = null;
-        _private.commandHandlers = [];
-        setInited(false);
+            _private.state.connected = false;
+            _private.socket = null;
+            _private.state.version = null;
+            _private.commandHandlers = [];
+            setInited(false);
 
-        _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
+            _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
+        }
 
         if(_private.reconnect_time){
+            _private.state.reconnect_tries++;
             setTimeout(init, _private.reconnect_time);
         }
     }
@@ -1221,7 +1235,15 @@ function MPD(_port, _host, _password){
             break;
             default:
                 debugger;
-                alert('***ERROR*** '+error.message);
+                var msg = '***MPD.js ERROR*** ' + error.message;
+                if(error.stack){
+                    msg += '\n' + error.stack;
+                }
+                else if(error.lineNumber && error.fileName){
+                    msg += '\non line ' + error.lineNumber + '\n';
+                    msg += 'of file ' + error.fileName;
+                }
+                alert(msg);
                 callHandler('Error', error, true);
             break;
         }
