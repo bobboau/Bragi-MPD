@@ -757,7 +757,7 @@ var UI = (function(){
      */
     function onError(error, client){
         debugger;
-        var msg = '***ERROR*** ' + error.message;
+        var msg = '***UI.js ERROR*** ' + error.message;
         if(error.stack){
             msg += '\n' + error.stack;
         }
