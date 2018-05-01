@@ -107,6 +107,7 @@ var UI = (function(){
         seek.last_seek = 0;
         updateState.timer = null;
         setPushedButton.timer = null;
+        onStreamError.deliberate_stop = false;
         onStreamError.last_error = 0;
         onStreamError.error_counter = 0;
         onStreamError.timer = null;
@@ -1179,10 +1180,7 @@ var UI = (function(){
     function pause(element){
         getClient().pause();
 
-        var stream = getStream();
-        if(!stream.paused){
-            stopStream(stream);
-        }
+        stopStream(getStream());
 
         setPushedButton(element);
     }
@@ -2122,6 +2120,8 @@ var UI = (function(){
             return;
         }
 
+        onStreamError.deliberate_stop = false;
+
         var no_cache = '?no_cache=';
         var current_url = stream.src.split(no_cache, 2)[0];
 
@@ -2152,6 +2152,8 @@ var UI = (function(){
     function stopStream(stream){
         stream.pause();
         if(stream.src){
+            //setting empty source will trigger onStreamError(), this will let it know that it's not supposed to retry
+            onStreamError.deliberate_stop = true;
             stream.src = '';
         }
     }
@@ -2160,13 +2162,15 @@ var UI = (function(){
      * handle stream errors by retrying up to 10 times in 2 minutes, with increasing delay
      */
     function onStreamError(stream){
-        //don't do anything if MPD isn't playing, if the error limit was reached, or if we're already about to retry
-        if(!isPlaying() || onStreamError.error_counter >= 10 || onStreamError.timer){
+        //don't do anything if stream was stopped by stopStream, if MPD isn't playing, if the error limit was reached, or if we're already about to retry
+        if(onStreamError.deliberate_stop || !isPlaying() || onStreamError.error_counter >= 10 || onStreamError.timer){
+            onStreamError.deliberate_stop = false;
             return;
         }
 
-        //reset error counter if last error was over 2 minutes ago
         var current_time = getTime();
+
+        //reset error counter if last error was over 2 minutes ago
         if(current_time - onStreamError.last_error > 120){
             onStreamError.error_counter = 0;
         }

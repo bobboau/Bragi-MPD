@@ -805,7 +805,7 @@ function MPD(_port, _host, _password){
         _password = password;
         if(_private.state.connected){
             //if we are not connected we will issue the password as part of our reconnection
-            issueCommands('password '+_password);
+            issueCommands('password '+_password, null, true);
         }
     }
 
@@ -860,14 +860,7 @@ function MPD(_port, _host, _password){
       * set to something falsyto disable automatic reconnection
       * @private
       */
-     reconnect_time: 2000,
-
-     /**
-      * number -- int how many automatic reconnection attempts to make
-      * before clearing state and calling the disconnect handler
-      * @private
-      */
-     reconnect_silent_tries: 2,
+     reconnect_time: 3000,
 
      /**
       * true if we want logging turned on
@@ -880,7 +873,6 @@ function MPD(_port, _host, _password){
       * @typedef {Object} state
       * @property {String} version - server protocol version
       * @property {Boolean} connected - if we are currently connected to the server or not
-      * @property {Integer} reconnect_tries - how many automatic connection attemps made after disconnection; reset to 0 on confirmed successful connection
       * @property {String} playstate - enum, PLAYING, STOPPED, PAUSED
       * actual MPD attribute: state (int 0,1,2)
       * @property {Integer} volume - 0 to 1 the current volume
@@ -910,7 +902,6 @@ function MPD(_port, _host, _password){
      state:{
          version: null,
          connected:false,
-         reconnect_tries:0,
          playstate: null,
          volume: null,
          repeat: null,
@@ -956,10 +947,20 @@ function MPD(_port, _host, _password){
      responceProcessor:null,
 
      /**
+      * timer id for processComandQueue
+      */
+     process_comand_queue_timer:null,
+
+     /**
       * sequence of handlers for the sequence of commands that have been issued
       * @private
       */
      commandHandlers:[],
+
+     /**
+      * maximum number of commands to maintain in queue
+      */
+     max_command_queue_len:64,
 
      /**
       * commands that are yet to be processed
@@ -1042,7 +1043,6 @@ function MPD(_port, _host, _password){
       websocket.on('open',onConnect);
 
       websocket.on('message', function(){
-          _private.state.reconnect_tries = 0;
           _private.responceProcessor.apply(this,arguments);
       });
 
@@ -1073,21 +1073,17 @@ function MPD(_port, _host, _password){
     function onDisconnect(){
         log("disconnected");
 
-        //don't disturb anything until we've tried reconnecting at least _private.reconnect_silent_tries times
-        if(_private.state.reconnect_tries >= _private.reconnect_silent_tries || !_private.reconnect_time){
-            callHandler('Disconnect', arguments);
+        callHandler('Disconnect', arguments);
 
-            _private.state.connected = false;
-            _private.socket = null;
-            _private.state.version = null;
-            _private.commandHandlers = [];
-            setInited(false);
+        _private.state.connected = false;
+        _private.socket = null;
+        _private.state.version = null;
+        _private.commandHandlers = [];
+        setInited(false);
 
-            _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
-        }
+        _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
 
         if(_private.reconnect_time){
-            _private.state.reconnect_tries++;
             setTimeout(init, _private.reconnect_time);
         }
     }
@@ -1122,24 +1118,31 @@ function MPD(_port, _host, _password){
      * if a string is used as a command it will be assumed to have a 'do nothing' responce handler
      * if an object is passed it must be in the form of {command:<String>, handler:function(String[]), error:function(Error)}
      * this assumes we are starting in and wish to return to an idle state
+     * if priority is true-y, these commands will be added to the beginning of the queue (useful for auth)
      * @private
      */
-    function issueCommands(commands, is_idling){
+    function issueCommands(commands, is_idling, priority){
         if( Object.prototype.toString.call( commands ) !== '[object Array]' ) {
             //some joker didn't give us a set of commands... wrap it up
             commands = [commands];
         }
 
-        if(_private.command_queue.length === 0){
+        if(_private.command_queue.length === 0 || _private.command_queue.length + commands.length > _private.max_command_queue_len){
             _private.command_queue = commands;
-            //done in a timeout so we can combine commands effecently
-            setTimeout(function(){
-                processComandQueue(is_idling === false);
-            }, 50);
+        }
+        else if(priority){
+            _private.command_queue.unshift.apply(_private.command_queue, commands);
         }
         else{
-            //append additional commands, they'll get processed when the above command is done
             _private.command_queue.push.apply(_private.command_queue, commands);
+        }
+
+        //done in a timeout so we can combine commands effecently
+        if(!_private.process_command_queue_timer){
+            _private.process_command_queue_timer = setTimeout(function(){
+                processComandQueue(is_idling === false);
+                _private.process_command_queue_timer = null;
+            }, 50);
         }
     }
 
@@ -1149,6 +1152,11 @@ function MPD(_port, _host, _password){
      */
     function processComandQueue(is_not_idling){
         var command_string = '';
+
+        if(!_private.state.connected){
+            //can't do anything right now
+            return;
+        }
 
         if(_private.commandHandlers.length > 0 && _private.commandHandlers[0].command !== 'idle'){
             //there are outstatnding commands being processed still, wait until the last batch finishes
@@ -1452,7 +1460,7 @@ function MPD(_port, _host, _password){
             issueCommands({
                 command:'password '+_password,
                 error:cancelLoad
-            });
+            }, null, true);
         }
 
         //issue the commands that will (re)init this object
