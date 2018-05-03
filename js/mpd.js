@@ -87,6 +87,15 @@ function MPD(_port, _host, _password){
     };
 
     /**
+     * return the number of consecutive failed connection attempts made; reset on success
+     * @instance
+     * @returns {Integer} the number of unsuccessful connection attempts made
+     */
+    self.getFailedConnections = function(){
+        return _private.failed_connections;
+    };
+
+    /**
      * gets the protocol versing reported on connection
      * @instance
      * @returns {String} string desxriping the protocol version i.e. "1.18.0"
@@ -863,6 +872,13 @@ function MPD(_port, _host, _password){
      reconnect_time: 3000,
 
      /**
+      * number -- int number of consecutive failed connection attempts made
+      * reset to 0 on successs
+      * @private
+      */
+     failed_connections: 0,
+
+     /**
       * true if we want logging turned on
       * @private
       */
@@ -1079,6 +1095,7 @@ function MPD(_port, _host, _password){
         _private.socket = null;
         _private.state.version = null;
         _private.commandHandlers = [];
+        _private.failed_connections++;
         setInited(false);
 
         _private.responceProcessor = null; //will throw an error if we get any responces before we reconnect
@@ -1453,6 +1470,8 @@ function MPD(_port, _host, _password){
         var line = lines.shift(1);
 
         _private.state.version = line.replace(/^OK MPD /, '');
+
+        _private.failed_connections = 0;
 
         _private.responceProcessor = onRawData;
 
