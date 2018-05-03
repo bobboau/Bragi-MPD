@@ -244,6 +244,7 @@ var UI = (function(){
         if(client_config.debug){
             client.enableLogging();
         }
+
         return client
     }
 
@@ -748,7 +749,11 @@ var UI = (function(){
         element.html('Not Connected!');
         element.addClass('bad');
         element.removeClass('good');
-        if(client == getClient()){
+
+        //only show disconnected overlay after 3 failed connection attempts
+        //the user may continue using the UI even when disconnected, as the
+        //command queue is preserved between attempts
+        if(client == getClient() && client.getFailedConnections() > 3){
             $('.MPD_disconnected').css({display:''});
         }
     }
@@ -1178,11 +1183,9 @@ var UI = (function(){
      * element -- the element that triggered the event (tells us which client to use)
      */
     function pause(element){
-        getClient().pause();
-
-        stopStream(getStream());
-
         setPushedButton(element);
+        getClient().pause();
+        stopStream(getStream());
     }
 
 
@@ -2136,6 +2139,9 @@ var UI = (function(){
      * play stream, handling promises to avoid spamming the console with errors.
      */
     function playStream(stream){
+        //this check is necessary to maintain the stream in a consistent state
+        //playing a stream with no src 'works', ie, stream.paused becomes false, but obviously plays nothing
+        //since we're using stream.paused to know whether the stream is actually working, we can't play without src
         if(!stream.src){
             return;
         }
