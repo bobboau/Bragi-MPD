@@ -1850,7 +1850,8 @@ function MPD(_port, _host, _password){
      * @private
      */
     function callHandler(event_name, args, uncached){
-        if(!_private.inited && !uncached){
+        //never queue disconnection events
+        if(!_private.inited && !uncached && event_name != 'Disconnect'){
             var event_obj = {};
             event_obj[event_name] = args;
             _private.queued_events.push(event_obj);
