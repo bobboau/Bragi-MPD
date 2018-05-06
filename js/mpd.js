@@ -1089,7 +1089,7 @@ function MPD(_port, _host, _password){
     function onDisconnect(){
         log("disconnected");
 
-        callHandler('Disconnect', arguments);
+        callHandler('Disconnect', arguments, true); //needs to be uncached to allow the UI to respond to failed reconnection attempts
 
         _private.state.connected = false;
         _private.socket = null;
@@ -1851,7 +1851,7 @@ function MPD(_port, _host, _password){
      */
     function callHandler(event_name, args, uncached){
         //never queue disconnection events
-        if(!_private.inited && !uncached && event_name != 'Disconnect'){
+        if(!_private.inited && !uncached){
             var event_obj = {};
             event_obj[event_name] = args;
             _private.queued_events.push(event_obj);
