@@ -195,6 +195,14 @@ function MPD(_port, _host, _password){
     self.getCurrentSong = getCurrentSong;
 
     /**
+     * gets the length of the current song
+     * @instance
+     * @function
+     * @returns {Float}
+     */
+    self.getCurrentSongDuration = getCurrentSongDuration;
+
+    /**
      * gets the time of the current song. will calculate it based on the reported time, and how long it's been since that happened
      * @instance
      * @function
@@ -716,6 +724,14 @@ function MPD(_port, _host, _password){
     };
 
     /**
+     * Request status update
+     * @instance@
+     */
+    self.updateStatus = function() {
+        issueCommands({command: 'status', handler: stateHandler});
+    };
+
+    /**
      * @instance
      * @param {String} [path] - path to the directory you are interested in relative to MPD's music root directory (root is a blank string, never start with '/')
      * @param {directoryContentsCallback}
@@ -903,7 +919,9 @@ function MPD(_port, _host, _password){
       * @property {Integer} current_song.queue_idx - which song in the current playlist is active
       * actual MPD attribute: song
       * @property {Float} current_song.elapsed_time - time into the currently playing song in seconds
-      * actual MPD attribute: elapsed
+      * actual MPD attribute: elapsed (MPD >= 0.16) or time (MPD <= 0.15)
+      * @property {Integer} current_song.duration - song duration in seconds
+      * actual MPD attribute: duration (MPD >= 0.20) or time (MPD <= 0.19)
       * @property {Integer} current_song.id - the id of the current song
       * actual MPD attribute: songid
       * @property {Object} next_song - info about the song next to play on the queue
@@ -929,12 +947,13 @@ function MPD(_port, _host, _password){
          current_song: {
              queue_idx: null,
              elapsed_time: null,
-              id: null
+             duration: null,
+             id: null
          },
 
          next_song: {
              queue_idx: null,
-              id: null
+             id: null
          },
          current_queue: null,
          queue_version: null,
@@ -994,43 +1013,6 @@ function MPD(_port, _host, _password){
     |* private methods *|
     \*******************/
 
-    /****************************\
-    |* UTF-8 compatability code *|
-    \****************************/
-
-    /* because websockify apparently doesn't do this :\ */
-
-    /**
-     * convert a string to a UTF-8 byte sequence
-     * @private
-     */
-    function encodeString(str){
-        for(var i=0, enc = encodeURIComponent(str), bytes = []; i < enc.length;) {
-            if(enc[i] === '%') {
-                bytes.push(parseInt(enc.substr(i+1, 2), 16));
-                i += 3;
-            }
-            else {
-                bytes.push(enc.charCodeAt(i++));
-            }
-        }
-        return bytes;
-    }
-
-
-    /**
-     * convert the byte sequence to a UTF-8 string
-     * @private
-     */
-    function decodeString(bytes){
-        for(var i=0, s=''; i<bytes.length; i++) {
-            var hex = bytes[i].toString(16);
-            if(hex.length < 2) hex = '0' + hex;
-            s += '%' + hex;
-        }
-        return decodeURIComponent(s);
-    }
-
     /*************************\
     |* connection management *|
     \*************************/
@@ -1041,7 +1023,7 @@ function MPD(_port, _host, _password){
      */
     function sendString(str){
         log('sending: "'+str+'"');
-        _private.socket.send(encodeString(str));
+        _private.socket.send(str);
     }
 
 
@@ -1051,18 +1033,18 @@ function MPD(_port, _host, _password){
      * @private
      */
     function init(){
-      var websocket_url = getAppropriateWsUrl();
-      var websocket = new Websock();
-      websocket.open(websocket_url);
+        var websocket_url = getAppropriateWsUrl();
+        var websocket = new WebSocket(websocket_url, 'binary');
+        websocket.binaryType = 'arraybuffer';
 
-      //these can throw
-      websocket.on('open',onConnect);
+        //these can throw
+        websocket.onopen = onConnect;
 
-      websocket.on('message', function(){
-          _private.responceProcessor.apply(this,arguments);
-      });
+      websocket.onmessage = function(){
+          _private.responceProcessor.apply(this, arguments);
+      };
 
-      websocket.on('close',onDisconnect);
+      websocket.onclose = onDisconnect;
 
       _private.socket = websocket;
     }
@@ -1172,6 +1154,7 @@ function MPD(_port, _host, _password){
 
         if(!_private.state.connected){
             //can't do anything right now
+            //this check preserves the command queue between connection attempts
             return;
         }
 
@@ -1386,17 +1369,30 @@ function MPD(_port, _host, _password){
 
 
     /**
-     *fetch outstanding lines from MPD
+     * parse an ArrayBuffer as an UTF-8 string
+     * @private
      */
-    function getRawLines(){
+    function arrayBufferToUtf8String(arr){
+        arr = new Uint8Array(arr);
+        var i, str = '';
+        for (i = 0; i < arr.length; i++)
+            str += '%' + ('0' + arr[i].toString(16)).slice(-2);
+        return decodeURIComponent(str);
+    }
 
-        _private.raw_buffer += decodeString(_private.socket.rQshiftBytes());//get the raw string
 
-        var lines = _private.raw_buffer.split('\n');//split that into lines
+    /**
+     * fetch outstanding lines from MPD
+     * @private
+     */
+    function getRawLines(data){
+        _private.raw_buffer += arrayBufferToUtf8String(data); //get the raw string
+
+        var lines = _private.raw_buffer.split('\n'); //split that into lines
 
         _private.raw_buffer = lines.pop(); //last line is incomplete
 
-        _private.raw_lines.push.apply(_private.raw_lines,lines); //append these new lines to the running collection we have
+        _private.raw_lines.push.apply(_private.raw_lines, lines); //append these new lines to the running collection we have
 
         if(_private.do_logging){
             lines.forEach(function(str){log('recived: "'+str+'"');}); //log what we got
@@ -1413,11 +1409,11 @@ function MPD(_port, _host, _password){
      * might be multiple messages
      * @private
      */
-    function onRawData(){
-        var lines = getRawLines();
-        //keep processing untill we can't process any more
+    function onRawData(evt){
+        var lines = getRawLines(evt.data);
+        //keep processing until we can't process any more
         var command_processor = null;
-        var old_lines;//this is infinite loop prevention, should never actually happen
+        var old_lines; //this is infinite loop prevention, should never actually happen
         while(lines.length > 0 && old_lines != lines.length){
             old_lines = lines.length;
 
@@ -1460,8 +1456,8 @@ function MPD(_port, _host, _password){
      * this handles raw data because when we first connect the protocol is comepletely different than at any other point
      * @private
      */
-    function handleConnectionMessage(){
-        var lines = getRawLines();
+    function handleConnectionMessage(evt){
+        var lines = getRawLines(evt.data);
 
         if(lines.length < 1){
             return;
@@ -1530,18 +1526,36 @@ function MPD(_port, _host, _password){
             if(value.match(/^\d*(\.\d*)?$/)){
                 value = parseFloat(value);
             }
-            state[key] = value;
+
+            if (value !== null && value !== ''){
+                state[key] = value;
+            }
         });
+
+        // Enrich state (if it's on same track)
+        if('song' in state && state.song == _private.state.current_song.queue_idx){
+            state = Object.assign({}, _private.state, state); 
+        }
+
+        if(!('elapsed' in state) && 'time' in state && state.time){
+            state.elapsed = state.time.substr(0, state.time.indexOf(':')) - 0;
+        }
+
+        if(!('duration' in state) && 'time' in state && state.time){
+            state.duration = state.time.substr(state.time.indexOf(':') + 1) - 0;
+        }
 
         //normalize some of the state properties because I don't like them the way they are
         //because of course I know better than the MPD maintainers what things should be called and the ranges things should be in
         state.current_song = {
             queue_idx: state.song,
             elapsed_time: state.elapsed,
+            duration: state.duration,
             id: state.songid
         };
         delete state.song;
         delete state.elapsed;
+        delete state.duration;
         delete state.songid;
 
         state.mix_ramp_threshold = state.mixrampdb;
@@ -1987,6 +2001,15 @@ function MPD(_port, _host, _password){
 
 
     /**
+     * get the current song length
+     * @private
+     */
+    function getCurrentSongDuration(){
+        return _private.state.current_song.duration;
+    }
+
+
+    /**
      * get the current play time
      * @private
      */
@@ -2003,10 +2026,15 @@ function MPD(_port, _host, _password){
             offset = (now.getTime() - _private.last_status_update_time.getTime())/1000;
         }
 
+        var duration = _private.state.current_song.duration;
         var last_time = _private.state.current_song.elapsed_time;
         last_time = last_time?last_time:0;
+        var estimate = last_time + offset
 
-        return Math.min(last_time + offset, current_song.getDuration());
+        if (duration === undefined || Number.isNaN(duration)){
+            return estimate;
+        }
+        return Math.min(estimate, duration);
     }
 
 
