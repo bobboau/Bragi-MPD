@@ -1,0 +1,1 @@
+You may place config files in this directory. The user can specify which one to load with an URL parameter. Example: http://localhost/Bragi-MPD/?config=blah will load http://localhost/Bragi-MPD/configs/blah.js instead of http://localhost/Bragi-MPD/config.js.
