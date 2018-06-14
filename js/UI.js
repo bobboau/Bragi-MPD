@@ -22,9 +22,25 @@ var UI = (function(){
     \********/
 
     $(function(){
+        var config_file = 'config.js';
+        var user_config_file = null;
+
+        //check for a user-specified config file in the url
+        try{
+            var current_url = new URL(window.location.href);
+            user_config_file = current_url.searchParams.get('config').replace('/', '').replace(':', '').replace('..', '').trim();
+        }
+        catch(err){
+            //URLSearchParams not supported, won't load any user-specified config file
+        }
+
+        if (user_config_file){
+            config_file = 'configs/' + user_config_file + '.js';
+        }
+
         //try to load custom configuration
         //when done (wether it succeeds or fails) init the page
-        $.getScript( "config.js" ).done(init).fail(init);
+        $.getScript(config_file).done(init).fail(init);
     });
 
     /**
