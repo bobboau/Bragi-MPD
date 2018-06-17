@@ -1671,8 +1671,8 @@ var UI = (function(){
             filters = 'none';
         }
 
-        //apply filters to body
-        $('body').css('filter', filters);
+        //apply filters to UI
+        $('.UI_main').css('filter', filters);
     }
 
     /**

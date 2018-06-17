@@ -458,66 +458,69 @@ template for an output
             <div class="TAB_page" data-tab_page="settings">
                 <table class="MPD_setting">
                     <tr>
-                        <th>Repeat:</th>
-                        <td><input type="checkbox" data-setting="repeat" onchange="UI.settingChange(this);"></input></td>
+                        <th><label for="setting-repeat">Repeat:</label></th>
+                        <td><input type="checkbox" data-setting="repeat" onchange="UI.settingChange(this);" id="setting-repeat"></input></td>
                     </tr>
                     <tr>
-                        <th>Single:</th>
-                        <td><input type="checkbox" data-setting="single" onchange="UI.settingChange(this);"></input></td>
+                        <th><label for="setting-single">Single:</label></th>
+                        <td><input type="checkbox" data-setting="single" onchange="UI.settingChange(this);" id="setting-single"></input></td>
                     </tr>
                     <tr>
-                        <th>Consume:</th>
-                        <td><input type="checkbox" data-setting="consume" onchange="UI.settingChange(this);"></input></td>
+                        <th><label for="setting-consume">Consume:</label></th>
+                        <td><input type="checkbox" data-setting="consume" onchange="UI.settingChange(this);" id="setting-consume"></input></td>
                     </tr>
                     <tr>
-                        <th>Random:</th>
-                        <td><input type="checkbox" data-setting="random" onchange="UI.settingChange(this);"></input></td>
+                        <th><label for="setting-random">Random:</label></th>
+                        <td><input type="checkbox" data-setting="random" onchange="UI.settingChange(this);" id="setting-random"></input></td>
                     </tr>
                     <tr>
-                        <th>Crossfade:</th>
-                        <td><input type="number" data-setting="crossfade" onchange="UI.settingChange(this);" onkeyup="UI.settingChange(this);" min="0" step="1"></input>(seconds)</td>
+                        <th><label for="setting-crossfade">Crossfade:</label></th>
+                        <td><input type="number" data-setting="crossfade" min="0" max="30" step="1" onchange="UI.settingChange(this);" onkeyup="UI.settingChange(this);" id="setting-crossfade"></input> (seconds)</td>
                     </tr>
                     <tr>
-                        <th>Notifications:</th>
-                        <td><input type="checkbox" data-setting="notifications" onchange="UI.settingChange(this);"></input></td>
+                        <th><label for="setting-notifications">Notifications:</label></th>
+                        <td><input type="checkbox" data-setting="notifications" onchange="UI.settingChange(this);" id="setting-notifications"></input></td>
                     </tr>
                     <tr>
-                        <th>Update database:</th>
-                        <td><input type="button" class="MPD_setting_update_db MPD_button" onclick="UI.updateDB(this);" value="Start"></input></td>
+                        <th><label for="setting-update-db">Update database:</label></th>
+                        <td><input type="button" class="MPD_setting_update_db MPD_button" onclick="UI.updateDB(this);" value="Start" id="setting-update-db"></input></td>
                     </tr>
-
                     <tr>
-                        <th>Brightness:</th>
+                        <th>Warning:</th>
+                        <td>the following color settings may cause poor performance in some browsers or devices. Reset them if they cause problems.</td>
+                    </tr>
+                    <tr>
+                        <th><label for="setting-color-brightness">Brightness:</label></th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="brightness" data-default="1" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="brightness" data-default="1" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);" id="setting-color-brightness"></input>
                             <input type="button" class="MPD_reset_color MPD_button" data-setting="brightness" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
-                        <th>Contrast:</th>
+                        <th><label for="setting-color-contrast">Contrast:</label></th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="contrast" data-default="1" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="contrast" data-default="1" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);" id="setting-color-contrast"></input>
                             <input type="button" class="MPD_reset_color MPD_button" data-setting="contrast" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
-                        <th>Saturation:</th>
+                        <th><label for="setting-color-saturation">Saturation:</label></th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="saturate" data-default="1" min="0" max="2" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="saturate" data-default="1" min="0" max="2" step="0.0000001" oninput="UI.colorChange(this);" id="setting-color-saturation"></input>
                             <input type="button" class="MPD_reset_color MPD_button" data-setting="saturate" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
-                        <th>Hue:</th>
+                        <th><label for="setting-color-hue">Hue:</label></th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="hue-rotate" data-default="0" data-unit="deg" min="0" max="360" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="hue-rotate" data-default="0" data-unit="deg" min="0" max="360" step="0.0000001" oninput="UI.colorChange(this);" id="setting-color-hue"></input>
                             <input type="button" class="MPD_reset_color MPD_button" data-setting="hue-rotate" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
-                        <th>Invert:</th>
+                        <th><label for="setting-color-invert">Invert:</label></th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="invert" data-default="0" min="0" max="1" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="invert" data-default="0" min="0" max="1" step="0.0000001" oninput="UI.colorChange(this);" id="setting-color-invert"></input>
                             <input type="button" class="MPD_reset_color MPD_button" data-setting="invert" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
