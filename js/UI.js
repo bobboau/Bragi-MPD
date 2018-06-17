@@ -57,6 +57,8 @@ var UI = (function(){
             });
         }
 
+        restoreColorSettings();
+
         setupFeatureDisabling();
 
         overrideMpd();
@@ -158,6 +160,22 @@ var UI = (function(){
     function getStream(){
         return $('audio.MPD_stream')[0];
     }
+
+    /**
+     * restore color settings from localstorage or apply defaults
+     */
+    function restoreColorSettings(){
+        $('.MPD_colorslider').each(function(){
+            var which_setting = $(this).data('setting');
+            var value = localStorage.getItem('setting_color_' + which_setting);
+            if (value === null){
+                value = $('[data-setting=' + which_setting + '].MPD_reset_color').data('default');
+            }
+            $(this).val(value);
+            $(this).trigger('input');
+        });
+    }
+
 
     /**
      * go through the list of config features and add css rules for all disabled features
@@ -1550,6 +1568,7 @@ var UI = (function(){
      */
     function settingChange(element){
         setPushedButton(element);
+
         var which_setting = $(element).data('setting');
         var value = $(element).is('input[type=checkbox]')?$(element).is(':checked'):$(element).val();
         //jquery on the subject of checkboxes: "because fuck your consistency and fuck you!"
@@ -1601,6 +1620,61 @@ var UI = (function(){
                 throw new Error('Unknown setting: "'+which_setting+'"');
             break;
         }
+    }
+
+    /**
+     * a UI color setting changed
+     */
+    function colorChange(element){
+        setPushedButton(element);
+
+        var which_setting = $(element).data('setting');
+
+        //unit (deg, %...)
+        var suffix = $(element).data('suffix');
+        if(!suffix){
+            suffix = '';
+        }
+
+        //determine the value to apply
+        var new_filter = '';
+        var value = $(element).data('default');
+        if (typeof value === 'undefined'){
+            //use the value of the slider
+            value = $(element).val();
+            localStorage.setItem('setting_color_' + which_setting, value);
+            new_filter = which_setting + '(' + value + suffix + ')';
+        }
+        else {
+            //the element is a reset button, so the value was already obtained from its data-default
+            //apply default value to slider
+             $('[data-setting=' + which_setting + '].MPD_colorslider').val(value);
+            localStorage.removeItem('setting_color_' + which_setting);
+        }
+
+        //get existing filters
+        var filters = $('body').css('filter');
+        if(filters == 'none'){
+            filters = '';
+        }
+
+        //modify exsting filters with new_filter
+        if(filters.includes(which_setting)){
+            //filter being modified already exists, replace it with new one
+            var pattern = new RegExp(which_setting + '\\([^\)]*\\)', 'g');
+            filters = filters.replace(pattern, new_filter);
+        }
+        else if(new_filter){
+            //add the filter
+            filters += ' ' + new_filter;
+        }
+        else{
+            //filter doesn't exist and will remain nonexistant
+            return;
+        }
+
+        //apply filters to body
+        $('body').css('filter', filters);
     }
 
     /**
@@ -2241,6 +2315,7 @@ var UI = (function(){
         addDirectoryToQueue:addDirectoryToQueue,
         addDirectoryToPlaylist:addDirectoryToPlaylist,
         settingChange:settingChange,
+        colorChange:colorChange,
         updateDB:updateDB,
         updateVolume:updateVolume,
         addSearchCriteria:addSearchCriteria,
