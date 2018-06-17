@@ -489,36 +489,36 @@ template for an output
                     <tr>
                         <th>Brightness:</th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="brightness" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);"></input>
-                            <input type="button" class="MPD_reset_color MPD_button" data-setting="brightness" data-default="1" onclick="UI.colorChange(this);" value="Reset"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="brightness" data-default="1" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="button" class="MPD_reset_color MPD_button" data-setting="brightness" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
                         <th>Contrast:</th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="contrast" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);"></input>
-                            <input type="button" class="MPD_reset_color MPD_button" data-setting="contrast" data-default="1" onclick="UI.colorChange(this);" value="Reset"></input>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Hue:</th>
-                        <td>
-                            <input type="range" class="MPD_colorslider" data-setting="hue-rotate" data-suffix="deg" min="0" max="360" step="0.0000001" oninput="UI.colorChange(this);"></input>
-                            <input type="button" class="MPD_reset_color MPD_button" data-setting="hue-rotate" data-default="0" data-suffix="deg" onclick="UI.colorChange(this);" value="Reset"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="contrast" data-default="1" min="0.5" max="1.5" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="button" class="MPD_reset_color MPD_button" data-setting="contrast" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
                         <th>Saturation:</th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="saturate" min="0" max="2" step="0.0000001" oninput="UI.colorChange(this);"></input>
-                            <input type="button" class="MPD_reset_color MPD_button" data-setting="saturate" data-default="1" onclick="UI.colorChange(this);" value="Reset"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="saturate" data-default="1" min="0" max="2" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="button" class="MPD_reset_color MPD_button" data-setting="saturate" onclick="UI.colorReset(this);" value="Reset"></input>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Hue:</th>
+                        <td>
+                            <input type="range" class="MPD_colorslider" data-setting="hue-rotate" data-default="0" data-unit="deg" min="0" max="360" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="button" class="MPD_reset_color MPD_button" data-setting="hue-rotate" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                     <tr>
                         <th>Invert:</th>
                         <td>
-                            <input type="range" class="MPD_colorslider" data-setting="invert" min="0" max="1" step="0.0000001" oninput="UI.colorChange(this);"></input>
-                            <input type="button" class="MPD_reset_color MPD_button" data-setting="invert" data-default="0" onclick="UI.colorChange(this);" value="Reset"></input>
+                            <input type="range" class="MPD_colorslider" data-setting="invert" data-default="0" min="0" max="1" step="0.0000001" oninput="UI.colorChange(this);"></input>
+                            <input type="button" class="MPD_reset_color MPD_button" data-setting="invert" onclick="UI.colorReset(this);" value="Reset"></input>
                         </td>
                     </tr>
                 </table>

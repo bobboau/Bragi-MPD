@@ -167,15 +167,18 @@ var UI = (function(){
     function restoreColorSettings(){
         $('.MPD_colorslider').each(function(){
             var which_setting = $(this).data('setting');
+
             var value = localStorage.getItem('setting_color_' + which_setting);
             if (value === null){
-                value = $('[data-setting=' + which_setting + '].MPD_reset_color').data('default');
+                value = $(this).data('default');
             }
-            $(this).val(value);
-            $(this).trigger('input');
-        });
-    }
 
+            $(this).val(value);
+        });
+
+        //it's only necessary to call colorChange() once because it always applies all color settings
+        colorChange();
+    }
 
     /**
      * go through the list of config features and add css rules for all disabled features
@@ -1626,55 +1629,64 @@ var UI = (function(){
      * a UI color setting changed
      */
     function colorChange(element){
-        setPushedButton(element);
+        var filters = '';
 
-        var which_setting = $(element).data('setting');
+        $('.MPD_colorslider').each(function(){
+            var which_setting = $(this).data('setting');
 
-        //unit (deg, %...)
-        var suffix = $(element).data('suffix');
-        if(!suffix){
-            suffix = '';
-        }
+            var default_value = $(this).data('default');
 
-        //determine the value to apply
-        var new_filter = '';
-        var value = $(element).data('default');
-        if (typeof value === 'undefined'){
-            //use the value of the slider
-            value = $(element).val();
-            localStorage.setItem('setting_color_' + which_setting, value);
-            new_filter = which_setting + '(' + value + suffix + ')';
-        }
-        else {
-            //the element is a reset button, so the value was already obtained from its data-default
-            //apply default value to slider
-             $('[data-setting=' + which_setting + '].MPD_colorslider').val(value);
-            localStorage.removeItem('setting_color_' + which_setting);
-        }
+            var value = $(this).val();
 
-        //get existing filters
-        var filters = $('body').css('filter');
-        if(filters == 'none'){
-            filters = '';
-        }
+            if(value == default_value){
+                //changed to default value, so simply remove the setting from storage and don't apply this filter
+                localStorage.removeItem('setting_color_' + which_setting);
+                return;
+            }
 
-        //modify exsting filters with new_filter
-        if(filters.includes(which_setting)){
-            //filter being modified already exists, replace it with new one
-            var pattern = new RegExp(which_setting + '\\([^\)]*\\)', 'g');
-            filters = filters.replace(pattern, new_filter);
-        }
-        else if(new_filter){
-            //add the filter
+            //invert filter can't be set too close to 0.5, it eliminates contrast
+            if(which_setting == 'invert'){
+                if(value > 0.45 && value < 0.5){
+                    value = 0.45;
+                }
+                else if(value >= 0.5 && value < 0.55){
+                    value = 0.55;
+                }
+            }
+
+            //get unit (deg, %...)
+            var unit = $(this).data('unit');
+            if(!unit){
+                unit = '';
+            }
+
+            var new_filter = which_setting + '(' + value + unit + ')';
+
             filters += ' ' + new_filter;
-        }
-        else{
-            //filter doesn't exist and will remain nonexistant
-            return;
+
+            localStorage.setItem('setting_color_' + which_setting, value);
+        });
+
+        if(!filters){
+            filters = 'none';
         }
 
         //apply filters to body
         $('body').css('filter', filters);
+    }
+
+    /**
+     * reset a UI color setting back to the default
+     */
+    function colorReset(element){
+        var which_setting = $(element).data('setting');
+
+        var slider = $('[data-setting=' + which_setting + '].MPD_colorslider');
+
+        var value = slider.data('default');
+
+        slider.val(value);
+        colorChange();
     }
 
     /**
@@ -2316,6 +2328,7 @@ var UI = (function(){
         addDirectoryToPlaylist:addDirectoryToPlaylist,
         settingChange:settingChange,
         colorChange:colorChange,
+        colorReset:colorReset,
         updateDB:updateDB,
         updateVolume:updateVolume,
         addSearchCriteria:addSearchCriteria,
