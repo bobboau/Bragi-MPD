@@ -51,9 +51,18 @@ div.MPD_controller_volume_container{
     margin-left: 10px;
 }
 
+.MPD_controller .MPD_controller_volume_icons .MPD_icon {
+    border: 1px solid transparent;
+    border-radius: 50%;
+}
+
+.MPD_controller .MPD_controller_volume_icons .MPD_icon.mute {
+    border-color: red;
+}
+
 .MPD_controller .MPD_volume{
     flex-grow: 0;
-    width: 20px;
+    width: 60px;
     margin-left: 10px;
 }
 

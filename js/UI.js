@@ -28,10 +28,10 @@ var UI = (function(){
         //check for a user-specified config file in the url
         try{
             var current_url = new URL(window.location.href);
-            user_config_file = current_url.searchParams.get('config').replace('/', '').replace(':', '').replace('..', '').trim();
+            user_config_file = current_url.searchParams.get('config').replace('%', '').replace('/', '').replace(':', '').replace('..', '').trim();
         }
         catch(err){
-            //URLSearchParams not supported, won't load any user-specified config file
+            //URLSearchParams not supported or config parameter not set, won't load any user-specified config file
         }
 
         if (user_config_file){
@@ -523,7 +523,21 @@ var UI = (function(){
         else{
             volume = client.getVolume();
         }
+
         $('input.MPD_volume').val(volume);
+        updateMuteIcons(volume)
+    }
+
+    /**
+     * update mute icons
+     */
+    function updateMuteIcons(volume){
+        if(volume < 0.005){
+            $('.MPD_controller_volume_icons .MPD_icon').addClass('mute');
+        }
+        else{
+            $('.MPD_controller_volume_icons .MPD_icon').removeClass('mute');
+        }
     }
 
     /**
@@ -881,7 +895,7 @@ var UI = (function(){
             document.title = title.substring(updatePageTitle.offset)+title.substring(0,updatePageTitle.offset);
         }
         else{
-            document.title = 'MPD Client';
+            document.title = 'Bragi MPD';
         }
     }
 
@@ -1276,6 +1290,8 @@ var UI = (function(){
             client.setVolume(volume);
             setPushedButton(element);
         }
+
+        updateMuteIcons(volume);
     }
 
 
