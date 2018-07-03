@@ -846,6 +846,14 @@ function MPD(_port, _host, _password){
      socket:null,
 
      /**
+      * the text encoder is used to convert strings into arraybuffers to be sent
+      * as binary frames through the websocket by the browser. this is necessary
+      * for compatibility with the latest versions of websockify, which dropped
+      * support for text frames.
+      */
+     text_encoder: new TextEncoder(),
+
+     /**
       * running string of partial responces from MPD
       */
      raw_buffer:'',
@@ -1023,7 +1031,7 @@ function MPD(_port, _host, _password){
      */
     function sendString(str){
         log('sending: "'+str+'"');
-        _private.socket.send(str);
+        _private.socket.send(_private.text_encoder.encode(str));
     }
 
 
