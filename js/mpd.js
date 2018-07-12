@@ -827,6 +827,11 @@ function MPD(_port, _host, _password){
      * @param {String}
      */
     self.authorize = function(password){
+        if(!password){
+            _password = undefined;
+            return;
+        }
+
         _password = password;
         if(_private.state.connected){
             //if we are not connected we will issue the password as part of our reconnection
