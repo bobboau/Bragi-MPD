@@ -57,9 +57,9 @@ var UI = (function(){
             });
         }
 
-        restoreColorSettings();
-
         setupFeatureDisabling();
+
+        restoreColorSettings();
 
         overrideMpd();
 

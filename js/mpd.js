@@ -856,7 +856,7 @@ function MPD(_port, _host, _password){
       * for compatibility with the latest versions of websockify, which dropped
       * support for text frames.
       */
-     text_encoder: new TextEncoder(),
+     text_encoder: new TextEncoder('utf-8'),
 
      /**
       * running string of partial responces from MPD
