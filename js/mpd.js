@@ -1023,7 +1023,7 @@ function MPD(_port, _host, _password){
      */
     function sendString(str){
         log('sending: "'+str+'"');
-        _private.socket.send(str);
+        _private.socket.send(new TextEncoder("utf-8").encode(str));
     }
 
 
@@ -1534,7 +1534,7 @@ function MPD(_port, _host, _password){
 
         // Enrich state (if it's on same track)
         if('song' in state && state.song == _private.state.current_song.queue_idx){
-            state = Object.assign({}, _private.state, state); 
+            state = Object.assign({}, _private.state, state);
         }
 
         if(!('elapsed' in state) && 'time' in state && state.time){
