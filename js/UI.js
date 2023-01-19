@@ -14,7 +14,8 @@ var UI = (function(){
         },
         history_state:[],
         active_history_state:-1,
-        last_clicked_file_element:null
+        last_clicked_file_element:null,
+		media_metadata:null
     };
 
     /********\
@@ -106,6 +107,17 @@ var UI = (function(){
             UI.clients.push(client);
         });
 
+        try{
+            UI.media_metadata = new MediaMetadata();
+        }
+        catch(err){
+            //MediaMetadata not supported
+        }
+        if(UI.media_metadata){
+            setInterval(function(){
+                updateMediaMetadata(getClient());
+            }, 2000);
+        }
 
         setInterval(function(){
             updatePlaytime(getClient());
@@ -849,6 +861,44 @@ var UI = (function(){
             if(countConnectedClients() == 0){
                 switchToTab('instance');
             }
+        }
+    }
+
+    /**
+     * update browser's MediaMetadata (for eg. info in bluetooth devices)
+     */
+    function updateMediaMetadata(client){
+        if(!UI.media_metadata){
+            return;
+        }
+
+        var title = 'Bragi MPD';
+        var artist = '';
+        var album = '';
+
+        var current_song = client.getCurrentSong();
+        if(current_song){
+            title = current_song.getDisplayName();
+            if(current_song.getArtist()){
+                artist = current_song.getArtist();
+            }
+            if(current_song.getAlbum()){
+                album = current_song.getAlbum();
+            }
+        }
+
+        if(UI.media_metadata.title != title){
+            UI.media_metadata.title = title;
+        }
+        if(UI.media_metadata.artist != artist){
+            UI.media_metadata.artist = artist;
+        }
+        if(UI.media_metadata.album != album){
+            UI.media_metadata.album = album;
+        }
+
+        if(navigator.mediaSession.metadata !== UI.media_metadata){
+            navigator.mediaSession.metadata = UI.media_metadata;
         }
     }
 
