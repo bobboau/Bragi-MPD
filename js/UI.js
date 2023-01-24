@@ -15,7 +15,7 @@ var UI = (function(){
         history_state:[],
         active_history_state:-1,
         last_clicked_file_element:null,
-		media_metadata:null
+        media_metadata:null
     };
 
     /********\
