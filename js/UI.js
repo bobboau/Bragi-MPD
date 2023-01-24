@@ -123,11 +123,13 @@ var UI = (function(){
             updatePlaytime(getClient());
         }, 250);
 
-        if(!mobileCheck()){
-            setInterval(function(){
-                updatePageTitle(getClient());
-            }, 250);
+        var page_title_interval = 250;
+        if(mobileCheck()){
+            page_title_interval = 2000;
         }
+        setInterval(function(){
+            updatePageTitle(getClient());
+        }, page_title_interval);
 
         //setup event handlers for marque elements
         setupMarque();
@@ -879,12 +881,8 @@ var UI = (function(){
         var current_song = client.getCurrentSong();
         if(current_song){
             title = current_song.getDisplayName();
-            if(current_song.getArtist()){
-                artist = current_song.getArtist();
-            }
-            if(current_song.getAlbum()){
-                album = current_song.getAlbum();
-            }
+            artist = current_song.getArtist() || '';
+            album = current_song.getAlbum() || '';
         }
 
         if(UI.media_metadata.title != title){
@@ -931,22 +929,28 @@ var UI = (function(){
      * update our UI for ticking of play time
      */
     function updatePageTitle(client){
+        var title = 'Bragi MPD';
         var current_song = client.getCurrentSong();
+
         if(current_song){
-            var title = current_song.getDisplayName()+' - ';
-            if(current_song.getArtist()){
-                title += current_song.getArtist()+' - ';
-            }
-            updatePageTitle.offset++;
-            if(updatePageTitle.offset > title.length){
-                updatePageTitle.offset = 0;
+            title = current_song.getDisplayName()+' - ';
+
+			var artist = current_song.getArtist();
+            if(artist){
+                title += artist+' - ';
             }
 
-            document.title = title.substring(updatePageTitle.offset)+title.substring(0,updatePageTitle.offset);
+            //don't scroll title on mobile
+            if(!mobileCheck()){
+                updatePageTitle.offset++;
+                if(updatePageTitle.offset > title.length){
+                    updatePageTitle.offset = 0;
+                }
+                title = title.substring(updatePageTitle.offset)+title.substring(0,updatePageTitle.offset);
+            }
         }
-        else{
-            document.title = 'Bragi MPD';
-        }
+
+        document.title = title;
     }
 
     /**
