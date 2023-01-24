@@ -1547,7 +1547,7 @@ function MPD(_port, _host, _password){
 
         // Enrich state (if it's on same track)
         if('song' in state && state.song == _private.state.current_song.queue_idx){
-            state = Object.assign({}, _private.state, state); 
+            state = Object.assign({}, _private.state, state);
         }
 
         if(!('elapsed' in state) && 'time' in state && state.time){
