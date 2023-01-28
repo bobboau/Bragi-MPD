@@ -7,16 +7,8 @@
     height: 0;
 }
 
-.MPD_setting{
-    margin-left:2em;
-    font-size: :2em;
-}
-
-.MPD_setting input{
-    margin: 2em;
-}
-
 .MPD_setting th{
+    padding: 2em 1em;
     text-align: right;
 }
 
@@ -26,4 +18,8 @@
 
 .MPD_setting_update_db.MPD_button{
     background-image: url(../img/save.svg);
+}
+
+.MPD_reset_color.MPD_button{
+    background-image: url(../img/reload.svg);
 }

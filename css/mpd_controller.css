@@ -22,6 +22,10 @@
     background-image: url(../img/media-pause.svg);
 }
 
+.MPD_controller_middle_controls {
+    min-width: 100px;
+}
+
 .MPD_prev.MPD_button, .MPD_next.MPD_button{
     width: 30px;
 }
@@ -51,14 +55,23 @@ div.MPD_controller_volume_container{
     margin-left: 10px;
 }
 
+.MPD_controller .MPD_controller_volume_icons .MPD_icon {
+    border: 1px solid transparent;
+    border-radius: 50%;
+}
+
+.MPD_controller .MPD_controller_volume_icons .MPD_icon.mute {
+    border-color: red;
+}
+
 .MPD_controller .MPD_volume{
     flex-grow: 0;
-    width: 20px;
+    width: 40px;
     margin-left: 10px;
 }
 
 .MPD_controller input[type=range].MPD_seek{
-    width: 100%;
+    width: auto;
     padding: 0;
     margin: auto 10px;
 }

@@ -827,6 +827,11 @@ function MPD(_port, _host, _password){
      * @param {String}
      */
     self.authorize = function(password){
+        if(!password){
+            _password = undefined;
+            return;
+        }
+
         _password = password;
         if(_private.state.connected){
             //if we are not connected we will issue the password as part of our reconnection
@@ -844,6 +849,14 @@ function MPD(_port, _host, _password){
       * @private
       */
      socket:null,
+
+     /**
+      * the text encoder is used to convert strings into arraybuffers to be sent
+      * as binary frames through the websocket by the browser. this is necessary
+      * for compatibility with the latest versions of websockify, which dropped
+      * support for text frames.
+      */
+     text_encoder: new TextEncoder('utf-8'),
 
      /**
       * running string of partial responces from MPD
@@ -1023,7 +1036,7 @@ function MPD(_port, _host, _password){
      */
     function sendString(str){
         log('sending: "'+str+'"');
-        _private.socket.send(new TextEncoder("utf-8").encode(str));
+        _private.socket.send(_private.text_encoder.encode(str));
     }
 
 
